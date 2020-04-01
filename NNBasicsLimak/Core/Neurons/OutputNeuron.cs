@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
+using NNBasics.NNBasicsLimak.Core.Abstracts;
 
-namespace NNBasics.Lab1
+namespace NNBasics.NNBasicsLimak.Core.Neurons
 {
    public class OutputNeuron : NeuronBase
    {

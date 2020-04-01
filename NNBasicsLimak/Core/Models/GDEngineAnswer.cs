@@ -1,14 +1,13 @@
 ﻿using System.Text;
-using NNBasics.Lab1;
 
-namespace NNBasics.Lab2
+namespace NNBasics.NNBasicsLimak.Core.Models
 {
-   public class GDEngineAnswer
+   public class GdEngineAnswer
    {
       public EngineAnswer Output { get; }
       public EngineAnswer Deltas { get; }
 
-      public GDEngineAnswer(EngineAnswer output, EngineAnswer deltas)
+      public GdEngineAnswer(EngineAnswer output, EngineAnswer deltas)
       {
          Output = output;
          Deltas = deltas;

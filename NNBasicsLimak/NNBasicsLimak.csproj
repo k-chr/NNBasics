@@ -4,19 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{94184778-77E0-4FA0-B0F3-8EE710EAE02C}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>NNBasics.Lab2</RootNamespace>
+    <ProjectGuid>{023AFB12-3492-47EF-B415-87F30F24D48D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NNBasics.NNBasicsLimak</RootNamespace>
     <AssemblyName>NNBasics</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <LangVersion>preview</LangVersion>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,15 +21,16 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,21 +43,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="ActivationFunctions\ReluFunctions.cs" />
+    <Compile Include="ActivationFunctions\SigmoidFunctions.cs" />
+    <Compile Include="ActivationFunctions\SwishFunctions.cs" />
+    <Compile Include="Core\Abstracts\Layer.cs" />
+    <Compile Include="Core\Abstracts\NeuronBase.cs" />
+    <Compile Include="Core\Layers\HiddenLayer.cs" />
+    <Compile Include="Core\Layers\PredictLayer.cs" />
+    <Compile Include="Core\Models\FeedbackAnswer.cs" />
+    <Compile Include="Core\Models\GDEngineAnswer.cs" />
+    <Compile Include="Core\NeuralEngine.cs" />
+    <Compile Include="Core\NeuralNetwork.cs" />
+    <Compile Include="Core\Neurons\InputNeuron.cs" />
+    <Compile Include="Core\Neurons\OutputNeuron.cs" />
+    <Compile Include="Core\UtilityTypes\Matrix.cs" />
+    <Compile Include="Extensions\DoubleExtensions.cs" />
+    <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Lab1\Lab1.csproj">
-      <Project>{9425027b-8b01-4f8c-be36-78b36b2716ac}</Project>
-      <Name>Lab1</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-    <Folder Include="Functions\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

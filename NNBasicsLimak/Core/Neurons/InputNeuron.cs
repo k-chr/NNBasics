@@ -1,4 +1,6 @@
-﻿namespace NNBasics.Lab1
+﻿using NNBasics.NNBasicsLimak.Core.Abstracts;
+
+namespace NNBasics.NNBasicsLimak.Core.Neurons
 {
    public class InputNeuron:NeuronBase
    {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using NNBasics.NNBasicsLimak.Core;
+using NNBasics.NNBasicsLimak.Core.Neurons;
 
 namespace NNBasics.Lab1
 {
@@ -15,12 +17,12 @@ namespace NNBasics.Lab1
          Console.WriteLine("-----------------------Task 1----------------------");
          Console.WriteLine("---------------------------------------------------");
 
-         InputNeuron iN = new InputNeuron {Value = 34.0};
-         OutputNeuron oN = new OutputNeuron {Weights = new List<double>(new[] {0.6})};
+         InputNeuron iN = new InputNeuron { Value = 34.0 };
+         OutputNeuron oN = new OutputNeuron { Weights = new List<double>(new[] { 0.6 }) };
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed(new List<InputNeuron>(new []{iN}), new List<OutputNeuron>(new []{oN})).ToString());
+         Console.WriteLine(NeuralEngine.Proceed(new List<InputNeuron>(new[] { iN }), new List<OutputNeuron>(new[] { oN })).ToString());
          Console.ReadKey();
 
          //Task2
@@ -31,17 +33,17 @@ namespace NNBasics.Lab1
          Console.WriteLine("-----------------------Task 2----------------------");
          Console.WriteLine("---------------------------------------------------");
 
-         InputNeuron iN1 = new InputNeuron(){Value = 3}, iN2 = new InputNeuron(){Value = 4}, iN3= new InputNeuron(){Value = 5};
-         List<InputNeuron> input = new List<InputNeuron>(new []
+         InputNeuron iN1 = new InputNeuron() { Value = 3 }, iN2 = new InputNeuron() { Value = 4 }, iN3 = new InputNeuron() { Value = 5 };
+         List<InputNeuron> input = new List<InputNeuron>(new[]
          {
             iN1, iN2, iN3
          });
 
-         oN.Weights = new List<double>(new[]{0.3, 0.6, 0.7});
+         oN.Weights = new List<double>(new[] { 0.3, 0.6, 0.7 });
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed(input, new List<OutputNeuron>(new []{oN})).ToString());
+         Console.WriteLine(NeuralEngine.Proceed(input, new List<OutputNeuron>(new[] { oN })).ToString());
          Console.ReadKey();
 
          //Task3
@@ -61,13 +63,13 @@ namespace NNBasics.Lab1
             iN1, iN2, iN3
          });
 
-         List<double> l1 = new List<double>(new[] {0.1,0.1,-0.3 });
-         List<double> l2 = new List<double>(new[] {0.1, 0.2, 0.0 });
-         List<double> l3 = new List<double>(new[] {0.0, 1.3, 0.1 });
+         List<double> l1 = new List<double>(new[] { 0.1, 0.1, -0.3 });
+         List<double> l2 = new List<double>(new[] { 0.1, 0.2, 0.0 });
+         List<double> l3 = new List<double>(new[] { 0.0, 1.3, 0.1 });
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed(input, new List<List<double>>(new[] {l1,l2,l3 })).ToString());
+         Console.WriteLine(NeuralEngine.Proceed(input, new List<List<double>>(new[] { l1, l2, l3 })).ToString());
          Console.ReadKey();
 
          //Task4
@@ -104,7 +106,7 @@ namespace NNBasics.Lab1
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed(input, null, true, -1.3, 1.3, new List<int>(new int[]{2,9,5,6,7,3}) ).ToString());
+         Console.WriteLine(NeuralEngine.Proceed(input, null, true, -1.3, 1.3, new List<int>(new int[] { 2, 9, 5, 6, 7, 3 })).ToString());
          Console.ReadKey();
       }
    }

@@ -44,16 +44,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InputNeuron.cs" />
-    <Compile Include="Extensions\DoubleExtension.cs" />
-    <Compile Include="NeuralEngine.cs" />
-    <Compile Include="NeuronBase.cs" />
-    <Compile Include="OutputNeuron.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

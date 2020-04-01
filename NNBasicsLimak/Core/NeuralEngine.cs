@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using NNBasics.Lab1.Extensions;
+using NNBasics.NNBasicsLimak.Core.Neurons;
+using NNBasics.NNBasicsLimak.Extensions;
 
-namespace NNBasics.Lab1
+namespace NNBasics.NNBasicsLimak.Core
 {
    public class NeuralEngine
    {

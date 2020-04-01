@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab1", "Lab1\Lab1.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab2", "Lab2\Lab2.csproj", "{94184778-77E0-4FA0-B0F3-8EE710EAE02C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NNBasicsLimak", "NNBasicsLimak\NNBasicsLimak.csproj", "{023AFB12-3492-47EF-B415-87F30F24D48D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{94184778-77E0-4FA0-B0F3-8EE710EAE02C}.Release|x64.Build.0 = Release|Any CPU
 		{94184778-77E0-4FA0-B0F3-8EE710EAE02C}.Release|x86.ActiveCfg = Release|Any CPU
 		{94184778-77E0-4FA0-B0F3-8EE710EAE02C}.Release|x86.Build.0 = Release|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Debug|x64.Build.0 = Debug|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Debug|x86.Build.0 = Debug|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Release|x64.ActiveCfg = Release|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Release|x64.Build.0 = Release|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Release|x86.ActiveCfg = Release|Any CPU
+		{023AFB12-3492-47EF-B415-87F30F24D48D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
