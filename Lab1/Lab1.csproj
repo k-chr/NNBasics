@@ -51,7 +51,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Extensions\" />
+    <ProjectReference Include="..\NNBasicsLimak\NNBasicsLimak.csproj">
+      <Project>{023afb12-3492-47ef-b415-87f30f24d48d}</Project>
+      <Name>NNBasicsLimak</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

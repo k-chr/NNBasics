@@ -17,8 +17,8 @@ namespace NNBasics.Lab1
          Console.WriteLine("-----------------------Task 1----------------------");
          Console.WriteLine("---------------------------------------------------");
 
-         InputNeuron iN = new InputNeuron { Value = 34.0 };
          OutputNeuron oN = new OutputNeuron { Weights = new List<double>(new[] { 0.6 }) };
+         InputNeuron iN = new InputNeuron { Value = 34.0 };
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
