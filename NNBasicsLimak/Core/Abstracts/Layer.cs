@@ -11,6 +11,7 @@ namespace NNBasics.NNBasicsLimak.Core.Abstracts
    {
       protected List<InputNeuron> Ins;
       protected List<OutputNeuron> Ons;
+      protected EngineAnswer latestAnswer;
 
       private double _alpha;
 
@@ -33,7 +34,9 @@ namespace NNBasics.NNBasicsLimak.Core.Abstracts
       public EngineAnswer Proceed(List<InputNeuron> input)
       {
          Ins = input;
-         return NeuralEngine.Proceed(input, Ons);
+         var ans = NeuralEngine.Proceed(input, Ons);
+         latestAnswer = new EngineAnswer(){Data = ans.Data.Select(d=>d).ToList()};
+         return ans;
       }
 
       protected Layer(List<OutputNeuron> ons)

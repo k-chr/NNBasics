@@ -12,8 +12,9 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
       {
       }
 
-      public FeedbackAnswer GetDeltas(EngineAnswer expectedAnswer, EngineAnswer thisLayerResponse)
+      public FeedbackAnswer GetDeltas(EngineAnswer expectedAnswer)
       {
+         var thisLayerResponse = latestAnswer;
          var deltas = thisLayerResponse.Data.Zip(expectedAnswer.Data, (prediction, goal) => prediction - goal).ToList();
          var ans = new EngineAnswer() { Data = deltas };
          UpdateWeights(new GdEngineAnswer(thisLayerResponse, ans));

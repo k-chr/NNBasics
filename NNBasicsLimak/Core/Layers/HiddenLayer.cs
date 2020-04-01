@@ -22,8 +22,9 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
          _activationFunction += d => fx?.Invoke(d)??d;
       }
 
-      public FeedbackAnswer BackPropagate(FeedbackAnswer previousLayerFeedbackAnswer, EngineAnswer thisLayerResponse)
+      public FeedbackAnswer BackPropagate(FeedbackAnswer previousLayerFeedbackAnswer)
       {
+         var thisLayerResponse = latestAnswer;
          var deltas = previousLayerFeedbackAnswer.Deltas;
          var matrix = deltas.Data.ToMatrix() * previousLayerFeedbackAnswer.Ons.ToMatrix();
          var data = matrix[0];

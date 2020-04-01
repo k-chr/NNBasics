@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NNBasics.NNBasicsLimak.Core.Neurons;
 using NNBasics.NNBasicsLimak.Core.UtilityTypes;
 
@@ -7,6 +8,13 @@ namespace NNBasics.NNBasicsLimak.Extensions
 {
    public static class ListExtensions
    {
+
+      public static List<OutputNeuron> ToOutputNeurons(this List<List<double>> data) => 
+         data.Select(d => (OutputNeuron) d).ToList();
+
+      public static List<InputNeuron> ToInputNeurons(this List<double> input) =>
+         input.Select(d => (InputNeuron) d).ToList();
+
       public static Matrix ToMatrix(this List<double> input)
       {
          var mat = new Matrix((input.Count, 1).ToTuple()) {input};
