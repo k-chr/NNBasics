@@ -18,6 +18,7 @@ namespace NNBasics.NNBasicsLimak.Core
       private double _currentIteration;
       private readonly PredictLayer _predictLayer;
       public event EventHandler<string> LogReport;
+
       private NeuralNetwork() { }
 
       private NeuralNetwork(NeuralNetworkBuilder neuralNetworkBuilder)
@@ -49,8 +50,16 @@ namespace NNBasics.NNBasicsLimak.Core
             set => _alpha = !value.Between(0, 1) ? throw new ArgumentException("Wrong alpha parameter") : (value);
          }
 
+         private bool _softmax;
          internal List<HiddenLayer> HiddenLayers { get; set; }
          internal PredictLayer PredictionLayer { get; set; }
+         private List<OutputNeuron> _predictionLayerNeurons;
+
+         public NeuralNetworkBuilder UseSoftmax()
+         {
+            _softmax = true;
+            return this;
+         }
 
          public NeuralNetworkBuilder WithAlpha(double alpha)
          {
@@ -60,7 +69,7 @@ namespace NNBasics.NNBasicsLimak.Core
 
          public NeuralNetworkBuilder AttachPredictionLayer(List<OutputNeuron> ons)
          {
-            PredictionLayer = new PredictLayer(ons);
+            _predictionLayerNeurons = ons;
             return this;
          }
 
@@ -72,6 +81,7 @@ namespace NNBasics.NNBasicsLimak.Core
 
          public NeuralNetwork BuildNetwork()
          {
+            PredictionLayer = new PredictLayer(_predictionLayerNeurons, _softmax);
             return new NeuralNetwork(this);
          }
       }
