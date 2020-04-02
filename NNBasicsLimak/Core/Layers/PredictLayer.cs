@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NNBasics.NNBasicsLimak.ActivationFunctions;
 using NNBasics.NNBasicsLimak.Core.Abstracts;
 using NNBasics.NNBasicsLimak.Core.Models;
 using NNBasics.NNBasicsLimak.Core.Neurons;
@@ -9,8 +10,11 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
 {
    public class PredictLayer : Layer
    {
-      public PredictLayer(List<OutputNeuron> ons) : base(ons)
+      private bool _useSoftmax;
+
+      public PredictLayer(List<OutputNeuron> ons, bool useSoftmax = false) : base(ons)
       {
+         _useSoftmax = useSoftmax;
       }
 
       public FeedbackAnswer GetDeltas(EngineAnswer expectedAnswer)
@@ -20,6 +24,16 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
          var ans = new EngineAnswer() { Data = deltas };
          UpdateWeights(new GdEngineAnswer(thisLayerResponse, ans));
          return new FeedbackAnswer(){Deltas = ans, Ons = Ons};
+      }
+
+      public new EngineAnswer Proceed(List<InputNeuron> input)
+      {
+         var ans = base.Proceed(input);
+         if (_useSoftmax)
+         {
+            ans.Data = ans.Data.Softmax();
+         }
+         return ans;
       }
 
       public override string ToString()
