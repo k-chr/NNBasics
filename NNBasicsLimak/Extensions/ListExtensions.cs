@@ -37,5 +37,10 @@ namespace NNBasics.NNBasicsLimak.Extensions
 
          return mat;
       }
+
+      public static List<double> Normalize(this List<double> input)
+      {
+         return input.Select(d => d / input.Sum()).ToList();
+      }
    }
 }

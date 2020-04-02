@@ -24,7 +24,7 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
 
       public FeedbackAnswer BackPropagate(FeedbackAnswer previousLayerFeedbackAnswer)
       {
-         var thisLayerResponse = latestAnswer;
+         var thisLayerResponse = LatestAnswer;
          var deltas = previousLayerFeedbackAnswer.Deltas;
          var matrix = deltas.Data.ToMatrix() * previousLayerFeedbackAnswer.Ons.ToMatrix();
          var data = matrix[0];

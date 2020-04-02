@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NNBasics.NNBasicsLimak.Core.Models;
 using NNBasics.NNBasicsLimak.Core.Neurons;
@@ -11,9 +12,11 @@ namespace NNBasics.NNBasicsLimak.Core.Abstracts
    {
       protected List<InputNeuron> Ins;
       protected List<OutputNeuron> Ons;
-      protected EngineAnswer latestAnswer;
+      protected EngineAnswer LatestAnswer;
 
       private double _alpha;
+
+      public List<ImmutableList<double>> Weights => Ons.Select(neuron => neuron.Weights.ToImmutableList()).ToList();
 
       public double Alpha
       {
@@ -35,7 +38,7 @@ namespace NNBasics.NNBasicsLimak.Core.Abstracts
       {
          Ins = input;
          var ans = NeuralEngine.Proceed(input, Ons);
-         latestAnswer = new EngineAnswer(){Data = ans.Data.Select(d=>d).ToList()};
+         LatestAnswer = new EngineAnswer(){Data = ans.Data.Select(d=>d).ToList()};
          return ans;
       }
 

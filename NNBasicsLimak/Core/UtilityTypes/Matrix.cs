@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using NNBasics.NNBasicsLimak.Extensions;
 
 namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 {
@@ -8,6 +10,23 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
    {
       private int _rows;
       private readonly int _cols;
+
+      public override string ToString()
+      {
+         var builder = new StringBuilder();
+         foreach (var row in this)
+         {
+            builder.Append("| ");
+            foreach (var d in row)
+            {
+               builder.Append(d).Append(" ");
+            }
+
+            builder.Append("|\n");
+         }
+
+         return builder.ToString();
+      }
 
       public Matrix(List<List<double>> values)
       {
@@ -22,7 +41,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 
       public Matrix(Tuple<int, int> size = null)
       {
-         var (rows, cols) = size?? Tuple.Create(1,1);
+         var (cols, rows) = size?? Tuple.Create(1,1);
          _rows = rows;
          _cols = cols;
       }
@@ -46,6 +65,16 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
             .Select(g => g.ToList())
             .ToList();
          return new Matrix(mat);
+      }
+
+      public static Matrix operator + (Matrix first, Matrix other)
+      {
+         if (first._cols != other._cols || first._rows != other._rows)
+         {
+            throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+         }
+
+         return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d + d1).ToList()).ToList().ToMatrix();
       }
 
       public static Matrix operator * (Matrix first, Matrix other)
