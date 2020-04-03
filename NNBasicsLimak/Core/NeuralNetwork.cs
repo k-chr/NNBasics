@@ -131,7 +131,7 @@ namespace NNBasics.NNBasicsLimak.Core
                error += seriesError;
                errors += seriesErrors;
                logger.Append(
-                     $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}] [Iteration No {_currentIteration + 1}] [Series No. {index + 1}]\n")
+                     $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}] [Iteration No. {_currentIteration + 1}] [Series No. {index + 1}]\n")
                   .Append("Result:\n").Append($"\n{ans}\n").Append($"Error of each neuron at current series:\n\n{seriesErrors}\n")
                   .Append($"Cumulative error after current series: \n\n{seriesError}\n");
 
@@ -147,7 +147,7 @@ namespace NNBasics.NNBasicsLimak.Core
 
 
             logger.Append(
-                     $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}] [Iteration No {_currentIteration + 1}]\n")
+                     $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}] [Iteration No. {_currentIteration + 1}]\n")
                   .Append("Result:\n").Append($"\n{ans}\n").Append($"Cumulative error of each neuron:\n\n{errors}\n")
                   .Append($"Total cumulative error after iteration step: \n\n{error}\n");
             endErrors = errors.ToMatrix();
@@ -168,6 +168,11 @@ namespace NNBasics.NNBasicsLimak.Core
          LogReport?.Invoke(this, logger.ToString());
 
          return (ans, endErrors, endError);
+      }
+
+      public (Matrix, Matrix, double) Test(Matrix expected, Matrix dataSeries, bool logToFile = false)
+      {
+
       }
 
       public int Learn(int iterations)

@@ -63,6 +63,7 @@
     <Compile Include="ActivationFunctions\SigmoidFunctions.cs" />
     <Compile Include="ActivationFunctions\Softmax.cs" />
     <Compile Include="ActivationFunctions\SwishFunctions.cs" />
+    <Compile Include="ActivationFunctions\TanHFunctions.cs" />
     <Compile Include="Core\Abstracts\Layer.cs" />
     <Compile Include="Core\Abstracts\NeuronBase.cs" />
     <Compile Include="Core\Layers\HiddenLayer.cs" />
