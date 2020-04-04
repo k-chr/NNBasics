@@ -25,6 +25,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
       private string Start => _isLearning ? "[Start of training]\n" : "[Start of testing]\n";
       private string CurrentDate => $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}]\n";
       private string End => "[End of logging]\n";
+      private string TestResult => "[Test results]\n";
 
       private bool _isSessionOpened;
       private bool _isLearning;
@@ -58,6 +59,35 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          stream.WriteTo(file);
 
          _logBuilder.Append(date).Append(Start);
+
+         return this;
+      }
+
+      public Logger LogTestFinalResults(PredictLayer layer, Matrix testErrors, double testError)
+      {
+         if (!_isSessionOpened)
+         {
+            throw new AccessViolationException(
+               "Session of logging is currently closed, open session first!");
+         }
+         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+         using var stream = new MemoryStream();
+         using var writer = new StreamWriter(stream);
+
+         var date = CurrentDate;
+
+         writer.Write(date);
+         writer.Write(TestResult);
+         writer.Write(PredictLayerTag(layer));
+         writer.Write(ErrorsTag(testErrors));
+         writer.Write(CumulativeErrorTag(testError));
+         stream.WriteTo(file);
+
+         _logBuilder.Append(date)
+            .Append(TestResult)
+            .Append(PredictLayerTag(layer))
+            .Append(ErrorsTag(testErrors))
+            .Append(CumulativeErrorTag(testError));
 
          return this;
       }
@@ -155,7 +185,8 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 
       public override string ToString()
       {
-         _logBuilder.Append(CurrentDate).Append(End);
+         _logBuilder.Append(CurrentDate)
+            .Append(End);
          return _logBuilder.ToString();
       }
 

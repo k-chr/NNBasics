@@ -16,6 +16,7 @@ namespace NNBasics.NNBasicsLimak.Core
       private int _currentIteration;
       private readonly PredictLayer _predictLayer;
       public event EventHandler<string> LogReport;
+      private bool _isLearned;
 
       private NeuralNetwork() { }
 
@@ -95,6 +96,8 @@ namespace NNBasics.NNBasicsLimak.Core
          var logger = Logger.Instance.StartSession(true)
             .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
+         _isLearned = false;
+
          for (var i = 0; i < iterations; ++i, ++_currentIteration)
          {
             var errors = new Matrix(Tuple.Create(expected[0].Count, 1));
@@ -116,12 +119,14 @@ namespace NNBasics.NNBasicsLimak.Core
 
                #endregion
 
-               #region BackPropagation
+               #region GetDeltasOnPredictionLayer
 
                var fAnswer = _predictLayer.GetDeltas(new EngineAnswer() { Data = expectedOutput });
 
+               #endregion
+
                #region ErrorCummulation
-               
+
                var seriesError = fAnswer.Deltas.Data.Sum(d => d * d);
                var seriesErrors = fAnswer.Deltas.Data.Select(d => d * d).ToList().ToMatrix();
                error += seriesError;
@@ -130,6 +135,8 @@ namespace NNBasics.NNBasicsLimak.Core
                logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
 
                #endregion
+
+               #region BackPropagation
 
                foreach (var hiddenLayer in _hiddenLayers)
                {
@@ -147,17 +154,68 @@ namespace NNBasics.NNBasicsLimak.Core
          LogReport?.Invoke(this, logger.ToString());
          logger.EndSession();
 
+         _isLearned = true;
+
          return (ans, endErrors, endError);
       }
 
-      public (Matrix, Matrix, double) Test(Matrix expected, Matrix dataSeries, bool logToFile = false)
+      public (Matrix, Matrix, double) Test(Matrix expected, Matrix dataSeries)
       {
 
+         if (!_isLearned)
+         {
+            throw new AccessViolationException("Network has never been trained before!!! What is your reason for running tests before teaching your network how to fit its answer according to provided input?");
+         }
+
+         var logger = Logger.Instance.StartSession(true)
+            .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
+
+         var ans = new Matrix();
+         var endError = 0.0;
+         var endErrors = new Matrix();
+
+         for (var index = 0; index < dataSeries.Count; ++index)
+         {
+            var rowInput = dataSeries[index].ToInputNeurons();
+            var expectedOutput = expected[index];
+
+            #region Propagation
+
+            foreach (var layer in _hiddenLayers)
+            {
+               var res = layer.Proceed(rowInput);
+               rowInput = res.Data.ToInputNeurons();
+            }
+
+            ans = _predictLayer.Proceed(rowInput).Data.ToMatrix();
+
+            #endregion
+
+            #region GetDeltasOnPredictionLayer
+
+            var fAnswer = _predictLayer.GetDeltas(new EngineAnswer() {Data = expectedOutput});
+
+            #endregion
+
+            #region ErrorCummulation
+
+            var seriesError = fAnswer.Deltas.Data.Sum(d => d * d);
+            var seriesErrors = fAnswer.Deltas.Data.Select(d => d * d).ToList().ToMatrix();
+            endError += seriesError;
+            endErrors += seriesErrors;
+
+            logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
+
+            #endregion
+         }
+
+         logger.LogTestFinalResults(_predictLayer, endErrors, endError);
+
+         LogReport?.Invoke(this, logger.ToString());
+         logger.EndSession();
+
+         return (ans, endErrors, endError);
       }
 
-      public int Learn(int iterations)
-      {
-         return iterations;
-      }
    }
 }
