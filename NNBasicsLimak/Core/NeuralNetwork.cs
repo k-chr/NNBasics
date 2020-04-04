@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using NNBasics.NNBasicsLimak.ActivationFunctions;
 using NNBasics.NNBasicsLimak.Core.Layers;
 using NNBasics.NNBasicsLimak.Core.Neurons;
@@ -15,7 +13,7 @@ namespace NNBasics.NNBasicsLimak.Core
    public class NeuralNetwork
    {
       private readonly List<HiddenLayer> _hiddenLayers;
-      private double _currentIteration;
+      private int _currentIteration;
       private readonly PredictLayer _predictLayer;
       public event EventHandler<string> LogReport;
 
@@ -86,18 +84,16 @@ namespace NNBasics.NNBasicsLimak.Core
          }
       }
 
-      public Matrix ExpectedOutputDoubles { get; set; }
 
-      public (Matrix, Matrix, double) Train(Matrix expected, Matrix dataSeries, int iterations, bool logToFile = false)
+
+      public (Matrix, Matrix, double) Train(Matrix expected, Matrix dataSeries, int iterations)
       {
          var ans = new Matrix();
-         var logger = new StringBuilder();
          var endError = 0.0;
          var endErrors = new Matrix();
-         logger.Append($"[{DateTime.Now.ToShortDateString()} | { DateTime.Now.ToLongTimeString()}] [Start of learning]\n")
-            .Append("Pre-Conditions:\n").Append($"\tExpected:\n {expected}\n")
-            .Append($"\tCount of hidden layers: {_hiddenLayers.Count}\n").Append($"\tAlpha = {_predictLayer.Alpha}\n")
-            .Append($"\tPrediction layer initial weights:\n{_predictLayer}\n");
+
+         var logger = Logger.Instance.StartSession(true)
+            .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
          for (var i = 0; i < iterations; ++i, ++_currentIteration)
          {
@@ -130,10 +126,8 @@ namespace NNBasics.NNBasicsLimak.Core
                var seriesErrors = fAnswer.Deltas.Data.Select(d => d * d).ToList().ToMatrix();
                error += seriesError;
                errors += seriesErrors;
-               logger.Append(
-                     $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}] [Iteration No. {_currentIteration + 1}] [Series No. {index + 1}]\n")
-                  .Append("Result:\n").Append($"\n{ans}\n").Append($"Error of each neuron at current series:\n\n{seriesErrors}\n")
-                  .Append($"Cumulative error after current series: \n\n{seriesError}\n");
+
+               logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
 
                #endregion
 
@@ -145,27 +139,13 @@ namespace NNBasics.NNBasicsLimak.Core
                #endregion
             }
 
-
-            logger.Append(
-                     $"[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}] [Iteration No. {_currentIteration + 1}]\n")
-                  .Append("Result:\n").Append($"\n{ans}\n").Append($"Cumulative error of each neuron:\n\n{errors}\n")
-                  .Append($"Total cumulative error after iteration step: \n\n{error}\n");
+            logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error);
             endErrors = errors.ToMatrix();
             endError = error;
          }
          
-         if (logToFile)
-         {
-            using var stream = new MemoryStream();
-            using var streamWriter = new StreamWriter(stream, new UnicodeEncoding());
-            streamWriter.Write(logger.ToString());
-            streamWriter.Flush();
-            stream.Seek(0, SeekOrigin.Begin);
-            using var file = new FileStream($"log_{Guid.NewGuid().ToString().Substring(0, 5)}_{DateTime.Now.ToShortDateString()}_{DateTime.Now.ToLongTimeString()}.log", FileMode.Create, FileAccess.Write);
-            stream.WriteTo(file);
-         }
-
          LogReport?.Invoke(this, logger.ToString());
+         logger.EndSession();
 
          return (ans, endErrors, endError);
       }

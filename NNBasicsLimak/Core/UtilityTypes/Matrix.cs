@@ -106,5 +106,10 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          return matrix;
       }
 
+      public Matrix HadamardProduct(Matrix other)
+      {
+         return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2).ToList()).ToList().ToMatrix();
+      }
+
    }
 }
