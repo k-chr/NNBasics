@@ -74,6 +74,7 @@
     <Compile Include="Core\NeuralNetwork.cs" />
     <Compile Include="Core\Neurons\InputNeuron.cs" />
     <Compile Include="Core\Neurons\OutputNeuron.cs" />
+    <Compile Include="Core\UtilityTypes\Logger.cs" />
     <Compile Include="Core\UtilityTypes\Matrix.cs" />
     <Compile Include="Extensions\DoubleExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />

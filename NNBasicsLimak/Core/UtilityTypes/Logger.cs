@@ -70,6 +70,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
             throw new AccessViolationException(
                "Session of logging is currently closed, open session first!");
          }
+
          using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
          using var stream = new MemoryStream();
          using var writer = new StreamWriter(stream);

@@ -36,6 +36,56 @@ namespace NNBasics.NNBasicsLimak.Core
 
       public class NeuralNetworkBuilder
       {
+
+         public class HiddenLayerBuilder
+         {
+            private List<OutputNeuron> _layerNeurons;
+            private Func<double, double> _fx;
+            private Func<double, double> _dfx;
+            private NeuralNetworkBuilder _parentBuilder;
+            private bool _dropout;
+            private readonly double _defaultDropoutRate = 0.5;
+            private double _dropoutRate;
+
+            internal HiddenLayerBuilder(NeuralNetworkBuilder parentBuilder,List<OutputNeuron> layerNeurons)
+            {
+               _layerNeurons = layerNeurons;
+               _parentBuilder = parentBuilder;
+            }
+
+            public HiddenLayerBuilder ApplyActivationFunction(Func<double, double> fx)
+            {
+               _fx = fx;
+               return this;
+            }
+
+            public HiddenLayerBuilder ApplyActivationFunctionDerivative(Func<double, double> dfx)
+            {
+               _dfx = dfx;
+               return this;
+            }
+
+            public HiddenLayerBuilder UseDropout()
+            {
+               _dropout = true;
+               return this;
+            }
+
+            public HiddenLayerBuilder UseCustomDropoutRate(double rate)
+            {
+               _dropoutRate = rate;
+               return this;
+            }
+
+            public NeuralNetworkBuilder BuildHiddenLayer()
+            {
+               _parentBuilder.HiddenLayers.Add(new HiddenLayer(_layerNeurons, _fx ?? ReluFunctions.Relu, _dfx ?? ReluFunctions.ReluDerivative, _dropout, _dropoutRate > 0 ? _dropoutRate : _defaultDropoutRate));
+               return _parentBuilder;
+            }
+
+         }
+
+
          private double _alpha;
 
          internal NeuralNetworkBuilder()
@@ -72,9 +122,9 @@ namespace NNBasics.NNBasicsLimak.Core
             return this;
          }
 
-         public NeuralNetworkBuilder AddHiddenLayer(List<OutputNeuron> layerNeurons, Func<double, double> fx = null, Func<double, double> dfx = null)
+         public NeuralNetworkBuilder AddHiddenLayer(List<OutputNeuron> layerNeurons, Func<double, double> fx = null, Func<double, double> dfx = null, bool useDropout = false)
          {
-            HiddenLayers.Add(new HiddenLayer(layerNeurons, fx ?? ReluFunctions.Relu, dfx ?? ReluFunctions.ReluDerivative));
+            
             return this;
          }
 
