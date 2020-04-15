@@ -16,18 +16,19 @@ namespace NNBasics.NNBasicsLimak.Extensions
       public static List<InputNeuron> ToInputNeurons(this List<double> input) =>
          input.Select(d => (InputNeuron) d).ToList();
 
-      public static Matrix ToMatrix(this List<double> input) => new Matrix((input.Count, 1).ToTuple()) {input};
+      public static Matrix ToMatrix(this List<double> input)
+      {
+         var l = new List<List<double>> {input};
+         var mat = new Matrix(l);
+         
+         return mat;
+      }
 
       public static Matrix ToMatrix(this List<List<double>> input) => new Matrix(input);
 
       public static Matrix ToMatrix(this List<OutputNeuron> ons)
       {
-         var mat = new Matrix();
-         foreach (var outputNeuron in ons)
-         {
-            mat.Add(outputNeuron.Weights);
-         }
-
+         var mat = new Matrix( ons.Select(neuron => neuron.Weights).ToList());
          return mat;
       }
 
@@ -47,6 +48,9 @@ namespace NNBasics.NNBasicsLimak.Extensions
             list[n] = value;
          }
       }
+
+      public static int ArgMax(this List<double> input) => input.Select((d, i) => (d, i)).Where(d => d.d == input.Max()).Select(d => d.i).First();
+
 
       public static List<double> Normalize(this List<double> input) => input.Select(d => d / input.Sum()).ToList();
    }

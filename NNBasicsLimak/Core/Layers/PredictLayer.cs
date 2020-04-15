@@ -10,7 +10,7 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
 {
    public class PredictLayer : Layer
    {
-      private bool _useSoftmax;
+      private readonly bool _useSoftmax;
 
       public PredictLayer(List<OutputNeuron> ons, bool useSoftmax = false) : base(ons)
       {
@@ -22,8 +22,13 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
          var thisLayerResponse = LatestAnswer;
          var deltas = thisLayerResponse.Data.Zip(expectedAnswer.Data, (prediction, goal) => prediction - goal).ToList();
          var ans = new EngineAnswer() { Data = deltas };
-         UpdateWeights(new GdEngineAnswer(thisLayerResponse, ans));
+         LatestDeltas = ans;
          return new FeedbackAnswer(){Deltas = ans, Ons = Ons};
+      }
+
+      public void Update()
+      {
+         UpdateWeights(new GdEngineAnswer(LatestAnswer, LatestDeltas));
       }
 
       public new EngineAnswer Proceed(List<InputNeuron> input)
@@ -41,7 +46,7 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
          var builder = new StringBuilder();
          foreach (var outputNeuron in Ons)
          {
-            builder.Append(new EngineAnswer(){Data = outputNeuron.Weights.Select(d=>d).ToList()}+"\n");
+            builder.Append(new EngineAnswer(){Data = outputNeuron.Weights.Select(d=>d).ToList()});
          }
 
          return builder.ToString();

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using NNBasics.NNBasicsLimak.Core.Abstracts;
 using NNBasics.NNBasicsLimak.Core.Models;
 using NNBasics.NNBasicsLimak.Core.Neurons;
-using NNBasics.NNBasicsLimak.Core.UtilityTypes;
 using NNBasics.NNBasicsLimak.Extensions;
 
 namespace NNBasics.NNBasicsLimak.Core.Layers
@@ -69,8 +69,13 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
          }
 
          var ans = new EngineAnswer() { Data = data };
-         UpdateWeights(new GdEngineAnswer(thisLayerResponse, deltas));
+         LatestDeltas = ans;
          return new FeedbackAnswer() { Deltas = ans, Ons = Ons };
+      }
+
+      public void Update()
+      {
+         UpdateWeights(new GdEngineAnswer(LatestAnswer, LatestDeltas));
       }
 
       public new EngineAnswer Proceed(List<InputNeuron> ins)
@@ -95,6 +100,17 @@ namespace NNBasics.NNBasicsLimak.Core.Layers
          }
 
          return new EngineAnswer() { Data = data };
+      }
+
+      public override string ToString()
+      {
+         var builder = new StringBuilder();
+         foreach (var outputNeuron in Ons)
+         {
+            builder.Append(new EngineAnswer() { Data = outputNeuron.Weights.Select(d => d).ToList() });
+         }
+
+         return builder.ToString();
       }
    }
 }

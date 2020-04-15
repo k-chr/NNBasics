@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using NNBasics.NNBasicsLimak.Core.Neurons;
+using NNBasics.NNBasicsLimak.Core.UtilityTypes;
 using NNBasics.NNBasicsLimak.Extensions;
 
 namespace NNBasics.NNBasicsLimak.Core
@@ -16,7 +17,7 @@ namespace NNBasics.NNBasicsLimak.Core
          foreach (var outputNeuron in oNs)
          {
             double tmp = 0;
-            
+
             foreach (var inputNeuron in iNs)
             {
                tmp += (inputNeuron.Value * outputNeuron.Weights[iNs.IndexOf(inputNeuron)]);
@@ -24,25 +25,25 @@ namespace NNBasics.NNBasicsLimak.Core
             rV.Add(tmp);
          }
 
-         var ans = new EngineAnswer() { Data = rV};
+         var ans = new EngineAnswer() { Data = rV };
 
          return ans;
       }
 
       public static EngineAnswer Proceed(List<InputNeuron> ins, List<List<double>> weights)
       {
-         var outputNeurons = weights.Select(doubles => new OutputNeuron() {Weights = doubles}).ToList();
+         var outputNeurons = weights.Select(doubles => new OutputNeuron() { Weights = doubles }).ToList();
          return Proceed(ins, outputNeurons);
       }
 
       public static EngineAnswer Proceed(List<InputNeuron> ins, Tuple<List<List<double>>, List<List<double>>> weights)
       {
          var hiddenOutput = Proceed(ins, weights.Item1);
-         List<InputNeuron> iNs = hiddenOutput.Data.Select(data => new InputNeuron() {Value = data}).ToList();
+         List<InputNeuron> iNs = hiddenOutput.Data.Select(data => new InputNeuron() { Value = data }).ToList();
          return Proceed(iNs, weights.Item2);
       }
 
-      public static EngineAnswer Proceed(List<InputNeuron> iNs, List<List<double>> outputWeights=null, bool randomizeLayers = false, double min = 0, double max = 0, List<int> layersSizes = null)
+      public static EngineAnswer Proceed(List<InputNeuron> iNs, List<List<double>> outputWeights = null, bool randomizeLayers = false, double min = 0, double max = 0, List<int> layersSizes = null)
       {
          if (!(outputWeights is null) && outputWeights.Any(weights => weights.Count != outputWeights[0].Count))
          {
@@ -56,7 +57,7 @@ namespace NNBasics.NNBasicsLimak.Core
             foreach (var layer in layers)
             {
                output = Proceed(iNs, layer);
-               iNs = output.Data.Select(data => new InputNeuron() {Value = data}).ToList();
+               iNs = output.Data.Select(data => new InputNeuron() { Value = data }).ToList();
             }
 
             return output;
@@ -65,14 +66,42 @@ namespace NNBasics.NNBasicsLimak.Core
          return Proceed(iNs, outputWeights);
       }
 
-      private static List<List<List<double>>> GenerateRandomLayers(int countOfInputNeurons,  double min, double max, List<int> sizes)
+      public static Matrix GenerateRandomLayer(int cols, int rows, double min, double max)
+      {
+         var collection = new List<List<double>>();
+         using var provider = new RNGCryptoServiceProvider();
+
+         for (var i = 0; i < rows; ++i)
+         {
+            var row = new List<double>();
+            for (var idx = 0; idx < cols; ++idx)
+            {
+               var bytes = new byte[2];
+               double res;
+               do
+               {
+                  provider.GetBytes(bytes);
+                  res = BitConverter.ToInt16(bytes, 0) / 30000.0;
+               } while (res < min || res > max || Math.Abs(res) < max / 100.0 || double.IsNaN(res));
+
+               row.Add(res);
+
+            }
+
+            collection.Add(row);
+         }
+
+         return collection.ToMatrix();
+      }
+
+      private static List<List<List<double>>> GenerateRandomLayers(int countOfInputNeurons, double min, double max, List<int> sizes)
       {
          if (min > max)
          {
             min.Swap(ref max);
          }
 
-         if (sizes is null ||sizes.Any(i => i < 0))
+         if (sizes is null || sizes.Any(i => i < 0))
          {
             throw new ArgumentException("Provided data are not valid to start generate hidden layers");
          }
@@ -95,7 +124,7 @@ namespace NNBasics.NNBasicsLimak.Core
                   {
                      provider.GetBytes(bytes);
                      res = BitConverter.ToDouble(bytes, 0);
-                  } while (res < min || res > max || Math.Abs(res) < 0.1 || double.IsNaN(res));
+                  } while (res < min || res > max || Math.Abs(res) < max / 10 || double.IsNaN(res));
 
                   row.Add(res);
 

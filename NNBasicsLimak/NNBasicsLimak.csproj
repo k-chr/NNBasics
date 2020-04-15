@@ -74,8 +74,9 @@
     <Compile Include="Core\NeuralNetwork.cs" />
     <Compile Include="Core\Neurons\InputNeuron.cs" />
     <Compile Include="Core\Neurons\OutputNeuron.cs" />
-    <Compile Include="Core\UtilityTypes\Logger.cs" />
-    <Compile Include="Core\UtilityTypes\Matrix.cs" />
+    <Compile Include="Core\Utilities\UtilitiesFunctions.cs" />
+    <Compile Include="Core\Utilities\UtilityTypes\Logger.cs" />
+    <Compile Include="Core\Utilities\UtilityTypes\Matrix.cs" />
     <Compile Include="Extensions\DoubleExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,5 +84,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

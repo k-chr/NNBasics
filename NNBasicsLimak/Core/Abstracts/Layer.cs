@@ -13,6 +13,7 @@ namespace NNBasics.NNBasicsLimak.Core.Abstracts
       protected List<InputNeuron> Ins;
       protected List<OutputNeuron> Ons;
       protected EngineAnswer LatestAnswer;
+      protected EngineAnswer LatestDeltas;
 
       private double _alpha;
 

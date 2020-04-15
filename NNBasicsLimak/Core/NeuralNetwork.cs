@@ -1,4 +1,5 @@
-﻿using System;
+﻿#undef Verbose
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NNBasics.NNBasicsLimak.ActivationFunctions;
@@ -9,6 +10,7 @@ using NNBasics.NNBasicsLimak.Extensions;
 
 namespace NNBasics.NNBasicsLimak.Core
 {
+
    //TODO Implement Neural network behaviour and add Layers members and backward propagation with activation functions
    public class NeuralNetwork
    {
@@ -17,14 +19,16 @@ namespace NNBasics.NNBasicsLimak.Core
       private readonly PredictLayer _predictLayer;
       public event EventHandler<string> LogReport;
       private bool _isLearned;
+      private string _name;
 
       private NeuralNetwork() { }
 
       private NeuralNetwork(NeuralNetworkBuilder neuralNetworkBuilder)
       {
+         _name = neuralNetworkBuilder.Name;
          _hiddenLayers = neuralNetworkBuilder.HiddenLayers;
          _predictLayer = neuralNetworkBuilder.PredictionLayer;
-         var alpha = Math.Max(neuralNetworkBuilder.Alpha, 0.01);
+         var alpha = Math.Max(neuralNetworkBuilder.Alpha, 0.005);
          _predictLayer.Alpha = alpha;
          foreach (var hiddenLayer in _hiddenLayers)
          {
@@ -84,8 +88,7 @@ namespace NNBasics.NNBasicsLimak.Core
             }
 
          }
-
-
+         
          private double _alpha;
 
          internal NeuralNetworkBuilder()
@@ -102,11 +105,19 @@ namespace NNBasics.NNBasicsLimak.Core
          private bool _softmax;
          internal List<HiddenLayer> HiddenLayers { get; set; }
          internal PredictLayer PredictionLayer { get; set; }
+         internal string Name { get; private set; }
+
          private List<OutputNeuron> _predictionLayerNeurons;
 
          public NeuralNetworkBuilder UseSoftmax()
          {
             _softmax = true;
+            return this;
+         }
+
+         public NeuralNetworkBuilder ApplyTheNameOfYourNetwork(string name)
+         { 
+            Name = name;
             return this;
          }
 
@@ -116,16 +127,27 @@ namespace NNBasics.NNBasicsLimak.Core
             return this;
          }
 
+         public NeuralNetworkBuilder AttachPredictionLayer(int rows, int cols, double max, double min)
+         {
+            _predictionLayerNeurons = NeuralEngine.GenerateRandomLayer(cols, rows, min, max).ToOutputNeurons();
+            return this;
+         }
+
+         public HiddenLayerBuilder AttachHiddenLayer(int rows, int cols, double max, double min)
+         {
+            var mat = NeuralEngine.GenerateRandomLayer(cols, rows, min, max).ToOutputNeurons();
+            return new HiddenLayerBuilder(this, mat);
+         }
+
          public NeuralNetworkBuilder AttachPredictionLayer(List<OutputNeuron> ons)
          {
             _predictionLayerNeurons = ons;
             return this;
          }
 
-         public NeuralNetworkBuilder AddHiddenLayer(List<OutputNeuron> layerNeurons, Func<double, double> fx = null, Func<double, double> dfx = null, bool useDropout = false)
+         public HiddenLayerBuilder AddHiddenLayer(List<OutputNeuron> layerNeurons)
          {
-            
-            return this;
+            return new HiddenLayerBuilder(this, layerNeurons);
          }
 
          public NeuralNetwork BuildNetwork()
@@ -135,15 +157,13 @@ namespace NNBasics.NNBasicsLimak.Core
          }
       }
 
-
-
       public (Matrix, Matrix, double) Train(Matrix expected, Matrix dataSeries, int iterations)
       {
          var ans = new Matrix();
          var endError = 0.0;
-         var endErrors = new Matrix();
+         var endErrors = new Matrix(Tuple.Create(1, _predictLayer.Weights.Count));
 
-         var logger = Logger.Instance.StartSession(true)
+         var logger = Logger.Instance.StartSession(true, _name)
             .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
          _isLearned = false;
@@ -152,6 +172,7 @@ namespace NNBasics.NNBasicsLimak.Core
          {
             var errors = new Matrix(Tuple.Create(expected[0].Count, 1));
             var error = 0.0;
+            var accuracy = 0;
             for (var index = 0; index < dataSeries.Count; ++index)
             {
                var rowInput = dataSeries[index].ToInputNeurons();
@@ -182,7 +203,12 @@ namespace NNBasics.NNBasicsLimak.Core
                error += seriesError;
                errors += seriesErrors;
 
-               logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
+               if (fAnswer.Deltas.Data.Count > 1)
+               {
+                  accuracy += ans[0].ArgMax() == expectedOutput.ArgMax() ? 1 : 0;
+               }
+
+               logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index + 1, expectedOutput.ToMatrix());
 
                #endregion
 
@@ -194,9 +220,22 @@ namespace NNBasics.NNBasicsLimak.Core
                }
 
                #endregion
+
+               #region UpdateWeights
+
+               _predictLayer.Update();
+
+               foreach (var hiddenLayer in _hiddenLayers)
+               {
+                  hiddenLayer.Update();
+               }
+               #if Verbose
+                  logger = logger.LogLayerInfo(_predictLayer, _hiddenLayers);
+               #endif
+               #endregion
             }
 
-            logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error);
+            logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error, accuracy, expected[0].Count > 1 ? expected.Count : 0);
             endErrors = errors.ToMatrix();
             endError = error;
          }
@@ -217,19 +256,20 @@ namespace NNBasics.NNBasicsLimak.Core
             throw new AccessViolationException("Network has never been trained before!!! What is your reason for running tests before teaching your network how to fit its answer according to provided input?");
          }
 
-         var logger = Logger.Instance.StartSession(true)
+         var logger = Logger.Instance.StartSession(name:_name)
             .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
          var ans = new Matrix();
          var endError = 0.0;
-         var endErrors = new Matrix();
+         var endErrors = new Matrix(Tuple.Create(_predictLayer.Weights.Count, 1));
+         var accuracy = 0;
 
          for (var index = 0; index < dataSeries.Count; ++index)
          {
             var rowInput = dataSeries[index].ToInputNeurons();
             var expectedOutput = expected[index];
 
-            #region Propagation
+#region Propagation
 
             foreach (var layer in _hiddenLayers)
             {
@@ -239,27 +279,32 @@ namespace NNBasics.NNBasicsLimak.Core
 
             ans = _predictLayer.Proceed(rowInput).Data.ToMatrix();
 
-            #endregion
+#endregion
 
-            #region GetDeltasOnPredictionLayer
+#region GetDeltasOnPredictionLayer
 
             var fAnswer = _predictLayer.GetDeltas(new EngineAnswer() {Data = expectedOutput});
 
-            #endregion
+#endregion
 
-            #region ErrorCummulation
+#region ErrorCummulation
 
             var seriesError = fAnswer.Deltas.Data.Sum(d => d * d);
             var seriesErrors = fAnswer.Deltas.Data.Select(d => d * d).ToList().ToMatrix();
             endError += seriesError;
             endErrors += seriesErrors;
+            
+            if (fAnswer.Deltas.Data.Count > 1)
+            {
+               accuracy += ans[0].ArgMax() == expectedOutput.ArgMax() ? 1 : 0;
+            }
 
             logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
 
-            #endregion
+#endregion
          }
 
-         logger.LogTestFinalResults(_predictLayer, endErrors, endError);
+         logger.LogTestFinalResults(_predictLayer, endErrors, endError, accuracy, expected[0].Count > 1 ? expected.Count : 0);
 
          LogReport?.Invoke(this, logger.ToString());
          logger.EndSession();
