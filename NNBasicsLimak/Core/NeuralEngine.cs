@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
+using NNBasics.NNBasicsLimak.Core.Models;
 using NNBasics.NNBasicsLimak.Core.Neurons;
+using NNBasics.NNBasicsLimak.Core.Utilities.UtilityTypes;
 using NNBasics.NNBasicsLimak.Core.UtilityTypes;
 using NNBasics.NNBasicsLimak.Extensions;
 
@@ -14,13 +15,14 @@ namespace NNBasics.NNBasicsLimak.Core
       public static EngineAnswer Proceed(List<InputNeuron> iNs, List<OutputNeuron> oNs)
       {
          var rV = new List<double>();
+         
          foreach (var outputNeuron in oNs)
          {
             double tmp = 0;
-
+            var i = 0;
             foreach (var inputNeuron in iNs)
             {
-               tmp += (inputNeuron.Value * outputNeuron.Weights[iNs.IndexOf(inputNeuron)]);
+               tmp += (inputNeuron.Value * outputNeuron.Weights[i++]);
             }
             rV.Add(tmp);
          }
@@ -138,25 +140,6 @@ namespace NNBasics.NNBasicsLimak.Core
          }
 
          return layers;
-      }
-   }
-
-   public class EngineAnswer
-   {
-      public List<double> Data { get; set; }
-
-      public override string ToString()
-      {
-         StringBuilder stringBuilder = new StringBuilder("");
-         stringBuilder.Append("[ ");
-         foreach (var elem in Data)
-         {
-            stringBuilder.Append(elem).Append(' ');
-         }
-
-         stringBuilder.Append("]\n");
-
-         return stringBuilder.ToString();
       }
    }
 }

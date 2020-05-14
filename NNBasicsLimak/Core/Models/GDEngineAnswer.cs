@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace NNBasics.NNBasicsLimak.Core.Models
 {
-   public class GdEngineAnswer
+   public class GdEngineAnswer : IDisposable
    {
       public EngineAnswer Output { get; }
       public EngineAnswer Deltas { get; }
@@ -23,6 +24,11 @@ namespace NNBasics.NNBasicsLimak.Core.Models
             .Append("---------------------------------------------");
 
          return stringBuilder.ToString();
+      }
+
+      public void Dispose()
+      {
+         GC.SuppressFinalize(this);
       }
    }
 }

@@ -68,6 +68,7 @@
     <Compile Include="Core\Abstracts\NeuronBase.cs" />
     <Compile Include="Core\Layers\HiddenLayer.cs" />
     <Compile Include="Core\Layers\PredictLayer.cs" />
+    <Compile Include="Core\Models\EngineAnswer.cs" />
     <Compile Include="Core\Models\FeedbackAnswer.cs" />
     <Compile Include="Core\Models\GDEngineAnswer.cs" />
     <Compile Include="Core\NeuralEngine.cs" />

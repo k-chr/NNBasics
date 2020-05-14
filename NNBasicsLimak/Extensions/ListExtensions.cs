@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using NNBasics.NNBasicsLimak.Core.Neurons;
-using NNBasics.NNBasicsLimak.Core.UtilityTypes;
+using NNBasics.NNBasicsLimak.Core.Utilities.UtilityTypes;
 
 namespace NNBasics.NNBasicsLimak.Extensions
 {
@@ -18,9 +18,39 @@ namespace NNBasics.NNBasicsLimak.Extensions
 
       public static Matrix ToMatrix(this List<double> input)
       {
-         var l = new List<List<double>> {input};
-         var mat = new Matrix(l);
-         
+         var mat = new Matrix(( input.Count, 1).ToTuple());
+
+         var i = 0;
+
+         foreach (var d in input)
+         {
+            mat[0][i] = d;
+            ++i;
+         }
+
+         return mat;
+      }
+
+      public static Matrix ToMatrix(this IEnumerable<IEnumerable<double>> data)
+      {
+         var cols = data.First().Count();
+         var rows = data.Count();
+         var mat = new Matrix(Tuple.Create(cols, rows));
+         var i = 0;
+         var j = 0;
+
+         foreach (var row in data)
+         {
+            foreach (var d in row)
+            {
+               mat[i][j] = d;
+               ++j;
+            }
+
+            j = 0;
+            ++i;
+         }
+
          return mat;
       }
 
@@ -28,7 +58,21 @@ namespace NNBasics.NNBasicsLimak.Extensions
 
       public static Matrix ToMatrix(this List<OutputNeuron> ons)
       {
-         var mat = new Matrix( ons.Select(neuron => neuron.Weights).ToList());
+         var mat = new Matrix(( ons[0].Weights.Count, ons.Count).ToTuple());
+         var (i, j) = (0, 0);
+
+         foreach (var outputNeuron in ons)
+         {
+            foreach (var d in outputNeuron.Weights)
+            {
+               mat[i][j] = d;
+               ++j;
+            }
+
+            j = 0;
+            ++i;
+         }
+
          return mat;
       }
 
@@ -49,7 +93,11 @@ namespace NNBasics.NNBasicsLimak.Extensions
          }
       }
 
-      public static int ArgMax(this List<double> input) => input.Select((d, i) => (d, i)).Where(d => d.d == input.Max()).Select(d => d.i).First();
+      public static int ArgMax(this List<double> input)
+      {
+         var max = input.Max();
+         return input.Select((d, i) => (d, i)).First(d => d.d == max).i;
+      }
 
 
       public static List<double> Normalize(this List<double> input) => input.Select(d => d / input.Sum()).ToList();

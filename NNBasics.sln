@@ -16,6 +16,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab3", "Lab3\Lab3.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab4", "Lab4\Lab4.csproj", "{9479CB34-2045-4B48-B2D9-BFFEB34850C0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{BBEDC0F3-B3C6-4AAF-8A86-E3648AC4235F}"
+	ProjectSection(SolutionItems) = preProject
+		Resources\t10k-images-idx3-ubyte = Resources\t10k-images-idx3-ubyte
+		Resources\t10k-labels-idx1-ubyte = Resources\t10k-labels-idx1-ubyte
+		Resources\train-images-idx3-ubyte = Resources\train-images-idx3-ubyte
+		Resources\train-labels-idx1-ubyte = Resources\train-labels-idx1-ubyte
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

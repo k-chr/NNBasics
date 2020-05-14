@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NNBasics.NNBasicsLimak.ActivationFunctions;
 using NNBasics.NNBasicsLimak.Core;
 using NNBasics.NNBasicsLimak.Extensions;
@@ -11,7 +10,6 @@ namespace Lab3
    {
       static void Main(string[] args)
       {
-#if Task
          #region Task1 & Task2 
 
          var hiddenWeights = new List<List<double>>
@@ -57,9 +55,7 @@ namespace Lab3
          neuralNetworkTask1AndTask2.Train(expected.ToMatrix(), series.ToMatrix(), 10000);
 
          #endregion
-#endif
-
-#if defined
+      
          #region Task3
 
          var (matSeries, matExpected) =
@@ -82,7 +78,6 @@ namespace Lab3
          networkTask3.Test(testExpected, testSeries);
 
          #endregion  
-#endif
 
          #region Task4
 
@@ -99,6 +94,7 @@ namespace Lab3
          var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBase();
 
          networkTask4.Train(trainingLabels, trainingSet, 10);
+
          networkTask4.Test(testLabels, testSet);
 
          #endregion

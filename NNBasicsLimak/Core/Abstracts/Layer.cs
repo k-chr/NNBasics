@@ -54,7 +54,7 @@ namespace NNBasics.NNBasicsLimak.Core.Abstracts
          var i = 0;
          foreach (var outputNeuron in Ons)
          {
-            var collection = Ins.Select(inputNeuron => inputNeuron.Value * deltas.Data[i]).ToList();
+            var collection = Ins.Select(inputNeuron => inputNeuron.Value * deltas.Data[i]);
             outputNeuron.Weights = outputNeuron.Weights.Zip(
                collection,
                (weight, weightDelta) => weight - weightDelta * Alpha

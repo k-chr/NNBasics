@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using NNBasics.NNBasicsLimak.Extensions;
 
-namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
+namespace NNBasics.NNBasicsLimak.Core.Utilities.UtilityTypes
 {
-   public class Matrix : List<List<double>>
+   public class Matrix : List<List<double>>, IDisposable
    {
       private int _rows;
       private readonly int _cols;
@@ -75,10 +75,29 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
       public Matrix Transpose()
       {
          var mat = this.SelectMany(inner => inner.Select((item, index) => new { item, index }))
-            .GroupBy(i => i.index, i => i.item)
-            .Select(g => g.ToList())
-            .ToList();
-         return new Matrix(mat);
+            .GroupBy(i => i.index, i => i.item).ToMatrix();
+         return mat;
+      }
+
+      public void AddMatrix(Matrix other)
+      {
+         if (_cols != other._cols || _rows != other._rows)
+         {
+            throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+         }
+
+         var i = 0;
+         foreach (var row in other)
+         {
+            var j = 0;
+
+            foreach (var d in row)
+            {
+               this[i][j++] += d;
+            }
+
+            ++i;
+         }
       }
 
       public static Matrix operator + (Matrix first, Matrix other)
@@ -88,7 +107,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
             throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
          }
 
-         return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d + d1).ToList()).ToList().ToMatrix();
+         return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d + d1)).ToMatrix();
       }
 
       public static Matrix operator * (Matrix first, Matrix other)
@@ -101,29 +120,34 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          var mat = first.Select(
             (row, rowId) => other.Transpose()
                                  .Select((col, colId) => col.Zip(row, (colCell, rowCell) => colCell*rowCell).Sum()
-                                 ).ToList()
-            ).ToList();
+                                 )
+            ).ToMatrix();
 
-         var matrix = new Matrix(mat);
-
-         return matrix;
+         return mat;
       }
 
       public static Matrix operator * (Matrix first, double alpha)
       {
         var mat = first.Select(
-            (row, rowId) => row.Select(elem => elem * alpha).ToList()
-         ).ToList();
+            (row, rowId) => row.Select(elem => elem * alpha
+         )).ToMatrix();
 
-         var matrix = new Matrix(mat);
-
-         return matrix;
+        return mat;
       }
 
       public Matrix HadamardProduct(Matrix other)
       {
-         return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2).ToList()).ToList().ToMatrix();
+         return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
       }
 
+      //public void HadamardProduct(Matrix other)
+      //{
+
+      //}
+
+      public void Dispose()
+      {
+         GC.SuppressFinalize(this);
+      }
    }
 }

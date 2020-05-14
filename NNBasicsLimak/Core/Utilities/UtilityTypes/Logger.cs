@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using NNBasics.NNBasicsLimak.Core.Abstracts;
 using NNBasics.NNBasicsLimak.Core.Layers;
+using NNBasics.NNBasicsLimak.Core.Utilities.UtilityTypes;
 
 namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 {
@@ -15,7 +17,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
       {
       }
 
-
+      private string PredictionLayerRangeTag(PredictLayer layer) => $"[Prediction layer initial weight range]<{layer.Weights.Min(list => list.Min())}; {layer.Weights.Max(list => list.Max())}>";
       private string AccuracyTag(double accuracy, double seriesCount) => $"Correct: {accuracy} of {seriesCount} ({(accuracy/(double)seriesCount) * 100}%)\n";
       private string AlphaTag(double alpha) => $"[Alpha]\n{alpha}\n";
       private string CumulativeErrorTag(double error) => $"[Cumulative error]\n{error}\n";
@@ -35,13 +37,14 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 
       private bool _isSessionOpened;
       private bool _isLearning;
+      private bool _verbose;
       private string _currentFile;
       private StringBuilder _logBuilder;
 
       private static Logger _instance;
       private string _name;
 
-      public Logger StartSession(bool isLearningSession = false, string name = null)
+      public Logger StartSession(bool isLearningSession = false, string name = null, bool verbose = false)
       {
          if (_isSessionOpened)
          {
@@ -49,6 +52,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
                "Session of logging is currently created, dump data first before you start another one session!");
          }
 
+         _verbose = verbose;
          _logBuilder = new StringBuilder();
          _isLearning = isLearningSession;
          _isSessionOpened = true;
@@ -68,7 +72,10 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          stream.Seek(0, SeekOrigin.Begin);
          stream.WriteTo(file);
 
-         _logBuilder.Append(date).Append(Start);
+         if (_verbose)
+         {
+            _logBuilder.Append(date).Append(Start); 
+         }
 
          return this;
       }
@@ -99,8 +106,11 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          stream.Seek(0, SeekOrigin.Begin);
          stream.WriteTo(file);
 
-         _logBuilder.Append(date)
-            .Append(PredictLayerTag(layer));
+         if (_verbose)
+         {
+            _logBuilder.Append(date)
+         .Append(PredictLayerTag(layer)); 
+         }
 
          foreach (var hiddenLayer in hiddenLayers)
          {
@@ -126,7 +136,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 
          writer.Write(date);
          writer.Write(TestResult);
-         writer.Write(PredictLayerTag(layer));
+         writer.Write(_verbose ? PredictLayerTag(layer) : PredictionLayerRangeTag(layer));
          writer.Write(ErrorsTag(testErrors));
          writer.Write(CumulativeErrorTag(testError));
 
@@ -139,15 +149,18 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          stream.Seek(0, SeekOrigin.Begin);
          stream.WriteTo(file);
 
-         _logBuilder.Append(date)
-            .Append(TestResult)
-            .Append(PredictLayerTag(layer))
-            .Append(ErrorsTag(testErrors))
-            .Append(CumulativeErrorTag(testError));
-
-         if (seriesCount > 0)
+         if (_verbose)
          {
-            _logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+            _logBuilder.Append(date)
+               .Append(TestResult)
+               .Append(PredictLayerTag(layer))
+               .Append(ErrorsTag(testErrors))
+               .Append(CumulativeErrorTag(testError));
+
+            if (seriesCount > 0)
+            {
+               _logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+            }
          }
 
          return this;
@@ -169,18 +182,21 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 
          writer.Write(date);
          writer.Write(Preconditions);
-         writer.Write(PredictLayerTag(predictionLayer));
+         writer.Write(_verbose ? PredictLayerTag(predictionLayer) : PredictionLayerRangeTag(predictionLayer));
          writer.Write(HiddenLayersCountTag(hiddenCount));
          writer.Write(AlphaTag(alpha));
          writer.Flush();
          stream.Seek(0, SeekOrigin.Begin);
          stream.WriteTo(file);
          
-         _logBuilder.Append(date)
-            .Append(Preconditions)
-            .Append(PredictLayerTag(predictionLayer))
-            .Append(HiddenLayersCountTag(hiddenCount))
-            .Append(AlphaTag(alpha));
+         if (_verbose)
+         {
+            _logBuilder.Append(date)
+               .Append(Preconditions)
+               .Append(PredictLayerTag(predictionLayer))
+               .Append(HiddenLayersCountTag(hiddenCount))
+               .Append(AlphaTag(alpha));
+         }
 
          return this;
       }
@@ -202,7 +218,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
 
          writer.Write(date);
          writer.Write(IterationTag(iterationIdx));
-         writer.Write(PredictLayerTag(layer));
+         writer.Write(_verbose ? PredictLayerTag(layer) : PredictionLayerRangeTag(layer));
          writer.Write(ErrorsTag(iterationErrors));
          writer.Write(CumulativeErrorTag(iterationError));
 
@@ -214,16 +230,19 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
          writer.Flush();
          stream.Seek(0, SeekOrigin.Begin);
          stream.WriteTo(file);
- 
-         _logBuilder.Append(date)
-            .Append(IterationTag(iterationIdx))
-            .Append(PredictLayerTag(layer))
-            .Append(ErrorsTag(iterationErrors))
-            .Append(CumulativeErrorTag(iterationError));
 
-         if (seriesCount > 0)
+         if (_verbose)
          {
-            _logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+            _logBuilder.Append(date)
+               .Append(IterationTag(iterationIdx))
+               .Append(PredictLayerTag(layer))
+               .Append(ErrorsTag(iterationErrors))
+               .Append(CumulativeErrorTag(iterationError));
+
+            if (seriesCount > 0)
+            {
+               _logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+            } 
          }
          return this;
       }
@@ -236,6 +255,7 @@ namespace NNBasics.NNBasicsLimak.Core.UtilityTypes
                "Session of logging is currently closed, open session first!");
          }
 
+         if (!_verbose) return this;
          using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
          using var stream = new MemoryStream();
          using var writer = new StreamWriter(stream);
