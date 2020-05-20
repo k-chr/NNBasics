@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,15 +7,35 @@ using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-   public class Matrix : List<List<double>>, IDisposable
-   {
+   public class Matrix :  IDisposable, IEnumerable<double[][]>
+   { 
       private int _rows;
       private readonly int _cols;
+
+      private double[][] _data;
+
+
+      public IEnumerator<double[][]> GetEnumerator()
+      {
+	      return (IEnumerator<double[][]>)_data.GetEnumerator();
+      }
+
+      public double[] this[int x]
+      {
+	      get => _data[x];
+	      set => _data[x] = value;
+      }
+
+      public double this[int x, int y]
+      {
+	      get => _data[x][y];
+	      set => _data[x][y] = value;
+      }
 
       public override string ToString()
       {
          var builder = new StringBuilder();
-         foreach (var row in this)
+         foreach (var row in _data)
          {
             builder.Append("| ");
             foreach (var d in row)
@@ -28,6 +49,11 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
          return builder.ToString();
       }
 
+      IEnumerator IEnumerable.GetEnumerator()
+      {
+	      return GetEnumerator();
+      }
+
       public Matrix(List<List<double>> values)
       {
          var cols = values[0].Count;
@@ -39,7 +65,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
          _cols = cols;
          _rows = values.Count;
 
-         AddRange(values);
+         
       }
 
       public Matrix(Tuple<int, int> size = null)
@@ -60,7 +86,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
       }
 
-      public new void Add(List<double> row)
+      public void Add(List<double> row)
       {
          if (row.Count != _cols)
          {
