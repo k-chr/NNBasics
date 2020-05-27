@@ -170,6 +170,27 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
+		public void SubtractMatrix(Matrix other)
+		{
+			if (Cols != other.Cols || Rows != other.Rows)
+			{
+				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+			}
+
+			var i = 0;
+			foreach (var row in other)
+			{
+				var j = 0;
+
+				foreach (var d in row)
+				{
+					_data[i][j++] -= d;
+				}
+
+				++i;
+			}
+		}
+
 		public static Matrix operator -(Matrix first, Matrix other)
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
