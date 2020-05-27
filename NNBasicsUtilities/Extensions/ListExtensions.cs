@@ -106,7 +106,7 @@ namespace NNBasicsUtilities.Extensions
          }
       }
 
-      public static int ArgMax(this List<double> input)
+      public static int ArgMax(this IReadOnlyCollection<double> input)
       {
          var max = input.Max();
          return input.Select((d, i) => (d, i)).First(d => Math.Abs(d.d - max) < Tolerance).i;
