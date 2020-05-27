@@ -51,17 +51,9 @@ namespace NNBasicsUtilities.Core.Abstracts
       protected void UpdateWeights(GdEngineAnswer answer)
       {
          var deltas = answer.Deltas;
-         var i = 0;
-         foreach (var outputNeuron in Ons)
-         {
-            var collection = Ins.Select(inputNeuron => inputNeuron.Value * deltas.Data[i]);
-            outputNeuron.Weights = outputNeuron.Weights.Zip(
-               collection,
-               (weight, weightDelta) => weight - weightDelta * Alpha
-            ).ToList();
-            ++i;
-         }
 
+         var mat = Ins.HadamardProduct(deltas.Data);
+         Ons.SubtractMatrix(mat * Alpha);
       }
    }
 }
