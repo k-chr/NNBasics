@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NNBasicsUtilities.ActivationFunctions;
+﻿using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.Abstracts;
 using NNBasicsUtilities.Core.Models;
-using NNBasicsUtilities.Core.Neurons;
+using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Core.Layers
 {
@@ -12,7 +9,7 @@ namespace NNBasicsUtilities.Core.Layers
    {
       private readonly bool _useSoftmax;
 
-      public PredictLayer(List<OutputNeuron> ons, bool useSoftmax = false) : base(ons)
+      public PredictLayer(Matrix ons, bool useSoftmax = false) : base(ons)
       {
          _useSoftmax = useSoftmax;
       }
@@ -20,7 +17,7 @@ namespace NNBasicsUtilities.Core.Layers
       public FeedbackAnswer GetDeltas(EngineAnswer expectedAnswer)
       {
          var thisLayerResponse = LatestAnswer;
-         var deltas = thisLayerResponse.Data.Zip(expectedAnswer.Data, (prediction, goal) => prediction - goal).ToList();
+         var deltas = thisLayerResponse.Data - expectedAnswer.Data;
          var ans = new EngineAnswer() { Data = deltas };
          LatestDeltas = ans;
          return new FeedbackAnswer(){Deltas = ans, Ons = Ons};
@@ -31,7 +28,7 @@ namespace NNBasicsUtilities.Core.Layers
          UpdateWeights(new GdEngineAnswer(LatestAnswer, LatestDeltas));
       }
 
-      public new EngineAnswer Proceed(List<InputNeuron> input)
+      public new EngineAnswer Proceed(Matrix input)
       {
          var ans = base.Proceed(input);
          if (_useSoftmax)
@@ -43,13 +40,7 @@ namespace NNBasicsUtilities.Core.Layers
 
       public override string ToString()
       {
-         var builder = new StringBuilder();
-         foreach (var outputNeuron in Ons)
-         {
-            builder.Append(new EngineAnswer(){Data = outputNeuron.Weights.Select(d=>d).ToList()});
-         }
-
-         return builder.ToString();
+	      return Ons.ToString();
       }
    }
 }

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NNBasicsUtilities.Core.Abstracts;
 using NNBasicsUtilities.Core.Models;
-using NNBasicsUtilities.Core.Neurons;
+using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Layers
@@ -20,7 +18,7 @@ namespace NNBasicsUtilities.Core.Layers
       private readonly bool _applyDropout;
       private readonly List<double> _dropout;
 
-      public HiddenLayer(List<OutputNeuron> ons, Func<double, double> fx = null, Func<double, double> dfx = null, bool dropout = false, double dropoutRate = 0) : base(ons)
+      public HiddenLayer(Matrix ons, Func<double, double> fx = null, Func<double, double> dfx = null, bool dropout = false, double dropoutRate = 0) : base(ons)
       {
          _activationFunctionDerivative += d => dfx?.Invoke(d) ?? 1;
          _applyDropout = dropout;
@@ -29,7 +27,7 @@ namespace NNBasicsUtilities.Core.Layers
 
          if (_applyDropout)
          {
-            var len = ons[0].Weights.Count;
+            var len = ons.Cols;
             var fill = (int)(len * dropoutRate);
             var trueDropout = fill / (double)len;
             _dropoutRate = trueDropout;
@@ -40,7 +38,7 @@ namespace NNBasicsUtilities.Core.Layers
       private List<double> GenerateDropout()
       {
          var l = new List<double>();
-         var count = Ons[0].Weights.Count;
+         var count = Ons.Cols;
          var fill = _dropoutRate * count;
 
          for (var i = 0; i < count; ++i)
@@ -57,15 +55,15 @@ namespace NNBasicsUtilities.Core.Layers
       {
          var thisLayerResponse = LatestAnswer;
          var deltas = previousLayerFeedbackAnswer.Deltas;
-         var matrix = deltas.Data.ToMatrix() * previousLayerFeedbackAnswer.Ons.ToMatrix();
-         var data = matrix[0];
-         data = data.Select((value, index) => value * _activationFunctionDerivative(thisLayerResponse.Data[index]))
-            .ToList();
+         var matrix = deltas.Data * previousLayerFeedbackAnswer.Ons;
+         var data = matrix;
+         thisLayerResponse.Data.ApplyFunction(d => _activationFunctionDerivative(d));
+         data = data.HadamardProduct(thisLayerResponse.Data);
          
          if (_applyDropout)
          {
-            var mat = data.ToMatrix().HadamardProduct(_dropout.ToMatrix());
-            data = mat[0];
+            var mat = data.HadamardProduct(_dropout.ToMatrix());
+            data = mat;
          }
 
          var ans = new EngineAnswer() { Data = data };
@@ -78,14 +76,14 @@ namespace NNBasicsUtilities.Core.Layers
          UpdateWeights(new GdEngineAnswer(LatestAnswer, LatestDeltas));
       }
 
-      public new EngineAnswer Proceed(List<InputNeuron> ins)
+      public new EngineAnswer Proceed(Matrix ins)
       {
          var ans = base.Proceed(ins);
-         var data = ans.Data.Select(arg => _activationFunction(arg)).ToList();
+         ans.Data.ApplyFunction(d => _activationFunction(d));
 
          if (_applyDropout)
          {
-            var mat = data.ToMatrix();
+	         var mat = ans.Data;
             var r = new Random();
             var bound = r.Next(10);
 
@@ -96,21 +94,15 @@ namespace NNBasicsUtilities.Core.Layers
 
             mat = mat.HadamardProduct(_dropout.ToMatrix());
 
-            data = mat[0];
+            ans.Data = mat;
          }
 
-         return new EngineAnswer() { Data = data };
+         return ans;
       }
 
       public override string ToString()
       {
-         var builder = new StringBuilder();
-         foreach (var outputNeuron in Ons)
-         {
-            builder.Append(new EngineAnswer() { Data = outputNeuron.Weights.Select(d => d).ToList() });
-         }
-
-         return builder.ToString();
+         return Ons.ToString();
       }
    }
 }
