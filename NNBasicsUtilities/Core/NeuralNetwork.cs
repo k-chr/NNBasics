@@ -44,7 +44,7 @@ namespace NNBasicsUtilities.Core
 
          public sealed class HiddenLayerBuilder
          {
-            private List<OutputNeuron> _layerNeurons;
+            private Matrix _layerNeurons;
             private Func<double, double> _fx;
             private Func<double, double> _dfx;
             private NeuralNetworkBuilder _parentBuilder;
@@ -52,7 +52,7 @@ namespace NNBasicsUtilities.Core
             private readonly double _defaultDropoutRate = 0.5;
             private double _dropoutRate;
 
-            internal HiddenLayerBuilder(NeuralNetworkBuilder parentBuilder,List<OutputNeuron> layerNeurons)
+            internal HiddenLayerBuilder(NeuralNetworkBuilder parentBuilder,Matrix layerNeurons)
             {
                _layerNeurons = layerNeurons;
                _parentBuilder = parentBuilder;
@@ -108,7 +108,7 @@ namespace NNBasicsUtilities.Core
          internal PredictLayer PredictionLayer { get; set; }
          internal string Name { get; private set; }
 
-         private List<OutputNeuron> _predictionLayerNeurons;
+         private Matrix _predictionLayerNeurons;
 
          public NeuralNetworkBuilder UseSoftmax()
          {
@@ -130,23 +130,23 @@ namespace NNBasicsUtilities.Core
 
          public NeuralNetworkBuilder AttachPredictionLayer(int rows, int cols, double max, double min)
          {
-            _predictionLayerNeurons = NeuralEngine.GenerateRandomLayer(cols, rows, min, max).ToOutputNeurons();
+            _predictionLayerNeurons = NeuralEngine.GenerateRandomLayer(cols, rows, min, max);
             return this;
          }
 
          public HiddenLayerBuilder AttachHiddenLayer(int rows, int cols, double max, double min)
          {
-            var mat = NeuralEngine.GenerateRandomLayer(cols, rows, min, max).ToOutputNeurons();
+            var mat = NeuralEngine.GenerateRandomLayer(cols, rows, min, max);
             return new HiddenLayerBuilder(this, mat);
          }
 
-         public NeuralNetworkBuilder AttachPredictionLayer(List<OutputNeuron> ons)
+         public NeuralNetworkBuilder AttachPredictionLayer(Matrix ons)
          {
             _predictionLayerNeurons = ons;
             return this;
          }
 
-         public HiddenLayerBuilder AddHiddenLayer(List<OutputNeuron> layerNeurons)
+         public HiddenLayerBuilder AddHiddenLayer(Matrix layerNeurons)
          {
             return new HiddenLayerBuilder(this, layerNeurons);
          }
@@ -174,17 +174,17 @@ namespace NNBasicsUtilities.Core
             var errors = new Matrix(Tuple.Create(expected[0].Count, 1));
             var error = 0.0;
             var accuracy = 0;
-            for (var index = 0; index < dataSeries.Count; ++index)
+            for (var index = 0; index < dataSeries.Rows; ++index)
             {
-               var rowInput = dataSeries[index].ToInputNeurons();
-               var expectedOutput = expected[index];
+               var rowInput = dataSeries[index].ToMatrix();
+               var expectedOutput = expected[index].ToMatrix();
 
                #region Propagation
 
                foreach (var layer in _hiddenLayers)
                {
                   var res = layer.Proceed(rowInput);
-                  rowInput = res.Data.ToInputNeurons();
+                  rowInput = res.Data;
                }
 
                ans = _predictLayer.Proceed(rowInput).Data.ToMatrix();
@@ -199,14 +199,14 @@ namespace NNBasicsUtilities.Core
 
                #region ErrorCummulation
 
-               var seriesError = fAnswer.Deltas.Data.Sum(d => d * d);
-               var seriesErrors = fAnswer.Deltas.Data.Select(d => d * d).ToList().ToMatrix();
+               var seriesError = fAnswer.Deltas.Data[0].Sum(d => d * d);
+               var seriesErrors = fAnswer.Deltas.Data.HadamardProduct(fAnswer.Deltas.Data);
                error += seriesError;
                errors.AddMatrix(seriesErrors);
 
-               if (fAnswer.Deltas.Data.Count > 1)
+               if (fAnswer.Deltas.Data.Cols > 1)
                {
-                  accuracy += ans[0].ArgMax() == expectedOutput.ArgMax() ? 1 : 0;
+                  accuracy += ans[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
                }
 
 #if Verbose
@@ -217,14 +217,14 @@ namespace NNBasicsUtilities.Core
 
                #region BackPropagation
 
-               //foreach (var hiddenLayer in _hiddenLayers)
-               //{
-               //   fAnswer = hiddenLayer.BackPropagate(fAnswer);
-               //}
+               foreach (var hiddenLayer in _hiddenLayers)
+               {
+                  fAnswer = hiddenLayer.BackPropagate(fAnswer);
+               }
 
-               //#endregion
+               #endregion
 
-               //#region UpdateWeights
+               #region UpdateWeights
 
                _predictLayer.Update();
 
@@ -239,7 +239,7 @@ namespace NNBasicsUtilities.Core
                #endregion
             }
             if((_currentIteration + 1) % period == 0) 
-               logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error, accuracy, expected[0].Count > 1 ? expected.Count : 0);
+               logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error, accuracy, expected.Cols > 1 ? expected.Rows : 0);
             endErrors = errors;
             endError = error;
          }

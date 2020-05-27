@@ -170,6 +170,16 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
+		public static Matrix operator -(Matrix first, Matrix other)
+		{
+			if (first.Cols != other.Cols || first.Rows != other.Rows)
+			{
+				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+			}
+
+			return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d - d1)).ToMatrix();
+		}
+
 		public static Matrix operator +(Matrix first, Matrix other)
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
