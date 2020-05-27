@@ -32,8 +32,8 @@ namespace NNBasicsUtilities.Core.Utilities
 
          foreach (var line in lines)
          {
-            var values = line.Split(' ').Select(s => s.Replace('.', ','));
-            var rowValues = values.Take(3);
+            var values = line.Split(' ').Select(s => s.Replace('.', ',')).ToList();
+            var rowValues = values.Take(3).ToList();
             var key = values.Skip(3).Take(1).First();
             var row = rowValues.Select(double.Parse).ToList();
             mat.Add(row);

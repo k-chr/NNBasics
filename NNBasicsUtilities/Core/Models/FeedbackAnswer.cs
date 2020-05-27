@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using NNBasicsUtilities.Core.Neurons;
+﻿using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Core.Models
 {
-   public class FeedbackAnswer : IDisposable
+   public class FeedbackAnswer
    {
-      public List<OutputNeuron> Ons { get; set; }
+      public Matrix Ons { get; set; }
       public EngineAnswer Deltas { get; set; }
-      public void Dispose()
-      {
-         GC.SuppressFinalize(this);
-      }
    }
 }

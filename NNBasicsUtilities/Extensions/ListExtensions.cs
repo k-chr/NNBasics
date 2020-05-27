@@ -24,11 +24,24 @@ namespace NNBasicsUtilities.Extensions
 
          foreach (var d in input)
          {
-            mat[0][i] = d;
+            mat[0, i] = d;
             ++i;
          }
 
          return mat;
+      }
+
+      public static Matrix ToMatrix(this IReadOnlyCollection<double> row)
+      {
+	      var mat = new Matrix(new Tuple<int, int>(1, row.Count));
+	      var i = 0;
+
+	      foreach (var d in row)
+	      {
+		      mat[0, i++] = d;
+	      }
+
+	      return mat;
       }
 
       public static Matrix ToMatrix(this IEnumerable<IEnumerable<double>> data)
@@ -43,7 +56,7 @@ namespace NNBasicsUtilities.Extensions
          {
             foreach (var d in row)
             {
-               mat[i][j] = d;
+               mat[i, j] = d;
                ++j;
             }
 
@@ -65,7 +78,7 @@ namespace NNBasicsUtilities.Extensions
          {
             foreach (var d in outputNeuron.Weights)
             {
-               mat[i][j] = d;
+               mat[i, j] = d;
                ++j;
             }
 
@@ -96,8 +109,10 @@ namespace NNBasicsUtilities.Extensions
       public static int ArgMax(this List<double> input)
       {
          var max = input.Max();
-         return input.Select((d, i) => (d, i)).First(d => d.d == max).i;
+         return input.Select((d, i) => (d, i)).First(d => Math.Abs(d.d - max) < Tolerance).i;
       }
+
+      private const double Tolerance = double.Epsilon;
 
 
       public static List<double> Normalize(this List<double> input) => input.Select(d => d / input.Sum()).ToList();
