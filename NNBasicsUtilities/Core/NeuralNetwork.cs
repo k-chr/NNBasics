@@ -5,7 +5,6 @@ using System.Linq;
 using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.Layers;
 using NNBasicsUtilities.Core.Models;
-using NNBasicsUtilities.Core.Neurons;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
@@ -20,9 +19,7 @@ namespace NNBasicsUtilities.Core
       private readonly PredictLayer _predictLayer;
       public event EventHandler<string> LogReport;
       private bool _isLearned;
-      private string _name;
-
-      private NeuralNetwork() { }
+      private readonly string _name;
 
       private NeuralNetwork(NeuralNetworkBuilder neuralNetworkBuilder)
       {
@@ -44,10 +41,10 @@ namespace NNBasicsUtilities.Core
 
          public sealed class HiddenLayerBuilder
          {
-            private Matrix _layerNeurons;
+            private readonly Matrix _layerNeurons;
             private Func<double, double> _fx;
             private Func<double, double> _dfx;
-            private NeuralNetworkBuilder _parentBuilder;
+            private readonly NeuralNetworkBuilder _parentBuilder;
             private bool _dropout;
             private readonly double _defaultDropoutRate = 0.5;
             private double _dropoutRate;
@@ -255,10 +252,10 @@ namespace NNBasicsUtilities.Core
       public (Matrix, Matrix, double) Test(Matrix expected, Matrix dataSeries)
       {
 
-         //if (!_isLearned)
-         //{
-         //   throw new AccessViolationException("Network has never been trained before!!! What is your reason for running tests before teaching your network how to fit its answer according to provided input?");
-         //}
+         if (!_isLearned)
+         {
+            throw new AccessViolationException("Network has never been trained before!!! What is your reason for running tests before teaching your network how to fit its answer according to provided input?");
+         }
 
          var logger = Logger.Instance.StartSession(name:_name)
             .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
@@ -268,17 +265,17 @@ namespace NNBasicsUtilities.Core
          var endErrors = new Matrix(Tuple.Create(_predictLayer.Weights.Count, 1));
          var accuracy = 0;
 
-         for (var index = 0; index < dataSeries.Count; ++index)
+         for (var index = 0; index < dataSeries.Rows; ++index)
          {
-            var rowInput = dataSeries[index].ToInputNeurons();
-            var expectedOutput = expected[index];
+            var rowInput = dataSeries[index].ToMatrix();
+            var expectedOutput = expected[index].ToMatrix();
 
 #region Propagation
 
             foreach (var layer in _hiddenLayers)
             {
                var res = layer.Proceed(rowInput);
-               rowInput = res.Data.ToInputNeurons();
+               rowInput = res.Data;
             }
 
             ans = _predictLayer.Proceed(rowInput).Data.ToMatrix();
@@ -293,14 +290,14 @@ namespace NNBasicsUtilities.Core
 
 #region ErrorCummulation
 
-            var seriesError = fAnswer.Deltas.Data.Sum(d => d * d);
-            var seriesErrors = fAnswer.Deltas.Data.Select(d => d * d).ToList().ToMatrix();
+            var seriesError = fAnswer.Deltas.Data[0].Sum(d => d * d);
+            var seriesErrors = fAnswer.Deltas.Data.HadamardProduct(fAnswer.Deltas.Data);
             endError += seriesError;
             endErrors.AddMatrix(seriesErrors);
             
-            if (fAnswer.Deltas.Data.Count > 1)
+            if (fAnswer.Deltas.Data.Cols > 1)
             {
-               accuracy += ans[0].ArgMax() == expectedOutput.ArgMax() ? 1 : 0;
+               accuracy += ans[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
             }
 
             logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
@@ -308,7 +305,7 @@ namespace NNBasicsUtilities.Core
 #endregion
          }
 
-         logger.LogTestFinalResults(_predictLayer, endErrors, endError, accuracy, expected[0].Count > 1 ? expected.Count : 0);
+         logger.LogTestFinalResults(_predictLayer, endErrors, endError, accuracy, expected.Cols > 1 ? expected.Rows : 0);
 
          LogReport?.Invoke(this, logger.ToString());
          logger.EndSession();
