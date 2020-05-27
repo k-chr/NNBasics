@@ -31,7 +31,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
-		public Matrix ApplyFunction(Func<double, double> fun)
+		public void ApplyFunction(Func<double, double> fun)
 		{
 			for (var i = 0; i < Rows; ++i)
 			{
@@ -40,8 +40,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 					_data[i][j] = fun(_data[i][j]);
 				}
 			}
-
-			return this;
 		}
 
 		public double this[int x, int y]
@@ -119,6 +117,20 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			SetValues(0);
 		}
 
+		private Matrix(Matrix values)
+		{
+			Cols = values.Cols;
+			Rows = values.Rows;
+			CreateRows();
+			for (var i = 0; i < Rows; ++i)
+			{
+				for (var j = 0; j < Cols; ++j)
+				{
+					_data[i][j] = values._data[i][j];
+				}
+			}
+		}
+
 		private void SetValues(double value)
 		{
 			for (var i = 0; i < Rows; ++i)
@@ -186,10 +198,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public static Matrix operator *(Matrix first, double alpha)
 		{
-			var mat = first.Select(
-				 (row, rowId) => row.Select(elem => elem * alpha
-			 )).ToMatrix();
-
+			var mat = new Matrix(first);
+			mat.ApplyFunction(d => d * alpha);
 			return mat;
 		}
 
@@ -197,11 +207,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
 		}
-
-		//public void HadamardProduct(Matrix other)
-		//{
-
-		//}
 
 		public void Dispose()
 		{
