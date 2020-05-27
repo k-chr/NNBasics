@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Core.Models
 {
-   public class EngineAnswer : IDisposable
+   public class EngineAnswer
    {
-      public List<double> Data { get; set; }
+      public Matrix Data { get; set; }
 
       public override string ToString()
       {
@@ -20,11 +21,6 @@ namespace NNBasicsUtilities.Core.Models
          stringBuilder.Append("]\n");
 
          return stringBuilder.ToString();
-      }
-
-      public void Dispose()
-      {
-         GC.SuppressFinalize(this);
       }
    }
 }

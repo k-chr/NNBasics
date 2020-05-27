@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using NNBasicsUtilities.Core.Models;
-using NNBasicsUtilities.Core.Neurons;
+using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Abstracts
 {
    public abstract class Layer
    {
-      protected List<InputNeuron> Ins;
-      protected List<OutputNeuron> Ons;
+      protected Matrix Ins;
+      protected Matrix Ons;
       protected EngineAnswer LatestAnswer;
       protected EngineAnswer LatestDeltas;
 
       private double _alpha;
 
-      public List<ImmutableList<double>> Weights => Ons.Select(neuron => neuron.Weights.ToImmutableList()).ToList();
+      public List<ImmutableList<double>> Weights => Ons.Select(neuron => neuron.ToImmutableList()).ToList();
 
       public double Alpha
       {
@@ -35,15 +35,15 @@ namespace NNBasicsUtilities.Core.Abstracts
          }
       }
 
-      public EngineAnswer Proceed(List<InputNeuron> input)
+      public EngineAnswer Proceed(Matrix input)
       {
          Ins = input;
          var ans = NeuralEngine.Proceed(input, Ons);
-         LatestAnswer = new EngineAnswer(){Data = ans.Data.Select(d=>d).ToList()};
+         LatestAnswer = new EngineAnswer(){Data = ans.Data};
          return ans;
       }
 
-      protected Layer(List<OutputNeuron> ons)
+      protected Layer(Matrix ons)
       {
          Ons = ons;
       }
