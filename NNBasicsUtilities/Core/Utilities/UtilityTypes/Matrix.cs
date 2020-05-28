@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
@@ -18,7 +19,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public IEnumerator<double[]> GetEnumerator()
 		{
-			return (IEnumerator<double[]>)_data.GetEnumerator();
+			return _data.AsEnumerable().GetEnumerator();
 		}
 
 		public IReadOnlyCollection<double> this[int x]
@@ -110,9 +111,10 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix(Tuple<int, int> size = null)
 		{
-			var (cols, rows) = size ?? Tuple.Create(1, 1);
+			var (rows, cols) = size ?? Tuple.Create(1, 1);
 			Rows = rows;
 			Cols = cols;
+			_data = new double[Rows][];
 			CreateRows();
 			SetValues(0);
 		}
@@ -121,6 +123,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			Cols = values.Cols;
 			Rows = values.Rows;
+			_data = new double[Rows][];
 			CreateRows();
 			for (var i = 0; i < Rows; ++i)
 			{
@@ -218,13 +221,60 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Multiplication cannot be performed, provided matrices don't match the rule: A.cols == B.rows, where A, B are matrices, cols is count of columns and rows is count of rows");
 			}
 
-			var mat = first.Select(
-				(row, rowId) => other.Transpose()
-											.Select((col, colId) => col.Zip(row, (colCell, rowCell) => colCell * rowCell).Sum()
-											)
-				).ToMatrix();
+
+			var mat = new Matrix((first.Rows, other.Cols).ToTuple());
+			mat.SetValues(0);
+			
+			var threads = new Thread[mat.Rows][];
+
+			for (var index = 0; index < threads.Length; index++)
+			{
+				threads[index] = new Thread[mat.Cols];
+			}
+
+
+			for (var i = 0; i < mat.Rows; ++i)
+			{
+				for (var j = 0; j < mat.Cols; ++j)
+				{
+					var (x, y) = (i, j);
+					////for (var k = 0; k < other.Rows; ++k)
+					////{
+					////	mat._data[i][j] += first._data[i][k] * other._data[k][j];
+					////}
+					//
+					//mat._data[x][y] = ComputeCell(x, y, first.Cols, first, other);
+					threads[i][j] = new Thread(_ => mat._data[x][y] = ComputeCell(x, y, other.Rows, first, other));
+					threads[i][j].Start();
+				}
+			}
+
+			foreach (var threadsArr in threads)
+			{
+				foreach (var t in threadsArr)
+				{
+					t.Join();
+				}
+			}
+
+			//first.Select(
+			//	(row, rowId) => other.Select((col, colId) => col.Zip(row, (colCell, rowCell) => colCell * rowCell).Sum()
+			//								)
+			//	).ToMatrix();
 
 			return mat;
+		}
+
+		private static double ComputeCell(int x, int y, int z, Matrix sourceLeft, Matrix sourceRight)
+		{
+			var result = 0.0;
+
+			for (var i = 0; i < z; ++i)
+			{
+				result += sourceLeft._data[x][i] * sourceRight._data[i][y];
+			}
+
+			return result;
 		}
 
 		public static Matrix operator *(Matrix first, double alpha)
@@ -236,6 +286,12 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix HadamardProduct(Matrix other)
 		{
+			if (this.Cols != other.Cols || this.Rows != other.Rows)
+			{
+				throw new ArgumentException($"Hadamard product cannot be computed: ({this.Rows}, {this.Cols}) != ({other.Rows}, {other.Cols})");
+			}
+			var mat = new Matrix(this);
+
 			return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
 		}
 
