@@ -221,7 +221,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Multiplication cannot be performed, provided matrices don't match the rule: A.cols == B.rows, where A, B are matrices, cols is count of columns and rows is count of rows");
 			}
 
-
 			var mat = new Matrix((first.Rows, other.Cols).ToTuple());
 			mat.SetValues(0);
 			
@@ -232,18 +231,11 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				threads[index] = new Thread[mat.Cols];
 			}
 
-
 			for (var i = 0; i < mat.Rows; ++i)
 			{
 				for (var j = 0; j < mat.Cols; ++j)
 				{
 					var (x, y) = (i, j);
-					////for (var k = 0; k < other.Rows; ++k)
-					////{
-					////	mat._data[i][j] += first._data[i][k] * other._data[k][j];
-					////}
-					//
-					//mat._data[x][y] = ComputeCell(x, y, first.Cols, first, other);
 					threads[i][j] = new Thread(_ => mat._data[x][y] = ComputeCell(x, y, other.Rows, first, other));
 					threads[i][j].Start();
 				}
@@ -256,11 +248,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 					t.Join();
 				}
 			}
-
-			//first.Select(
-			//	(row, rowId) => other.Select((col, colId) => col.Zip(row, (colCell, rowCell) => colCell * rowCell).Sum()
-			//								)
-			//	).ToMatrix();
 
 			return mat;
 		}
