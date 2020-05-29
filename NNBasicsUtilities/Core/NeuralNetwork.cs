@@ -292,7 +292,7 @@ namespace NNBasicsUtilities.Core
                rowInput = res.Data;
             }
 
-            ans = _predictLayer.Proceed(rowInput).Data.ToMatrix();
+            ans = _predictLayer.Proceed(rowInput).Data;
 
 #endregion
 
