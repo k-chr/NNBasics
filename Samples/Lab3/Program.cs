@@ -84,9 +84,9 @@ namespace Lab3
          var networkTask4 =
             NeuralNetwork.Builder.AttachPredictionLayer(10, 40, 0.1, -0.1)
                .AttachHiddenLayer(40, 784, 0.1, -0.1)
-               .ApplyActivationFunction(ReluFunctions.Relu)
-               .ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
-               .BuildHiddenLayer()
+						.ApplyActivationFunction(ReluFunctions.Relu)
+						.ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
+						.BuildHiddenLayer()
                .WithAlpha(0.01)
                .ApplyTheNameOfYourNetwork("Lab3_Task4_MNIST")
                .BuildNetwork();
