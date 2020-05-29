@@ -108,9 +108,20 @@ namespace NNBasicsUtilities.Extensions
 
       public static int ArgMax(this IReadOnlyCollection<double> input)
       {
-         var max = input.Max();
-         var rV = input.Select((d, i) => (d, i)).FirstOrDefault(d => Math.Abs(d.d - max) < Tolerance).i;
-         return rV;
+        
+         var i = 0;
+         var pos = i;
+         var max = input.First();
+         foreach (var d in input)
+         {
+	         if (d > max)
+	         {
+		         max = d;
+		         pos = i;
+	         }
+	         ++i;
+         }
+         return pos;
       }
 
       private const double Tolerance = double.Epsilon;

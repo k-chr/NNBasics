@@ -117,7 +117,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Cols = cols;
 			_data = new double[Rows][];
 			CreateRows();
-			SetValues(0);
+			//SetValues(0);
 		}
 
 		private Matrix(Matrix values)
@@ -251,7 +251,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			var mat = new Matrix((first.Rows, other.Cols).ToTuple());
-			mat.SetValues(0);
 
 			//var threads = new Thread[mat.Rows][];
 
@@ -267,10 +266,14 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 					//var (x, y) = (i, j);
 					//threads[i][j] = new Thread(_ => mat._data[x][y] = ComputeCell(x, y, other.Rows, first, other));
 					//threads[i][j].Start();
+					var result = 0.0;
+
 					for (var k = 0; k < first.Cols; ++k)
 					{
-						mat._data[i][j] += first._data[i][k] * other._data[k][j];
+						result += first._data[i][k] * other._data[k][j];
 					}
+
+					mat._data[i][j] = result;
 				}
 			}
 
@@ -310,9 +313,19 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			{
 				throw new ArgumentException($"Hadamard product cannot be computed: ({this.Rows}, {this.Cols}) != ({other.Rows}, {other.Cols})");
 			}
-			var mat = new Matrix(this);
 
-			return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
+			var (rows, cols) = (Rows, Cols);
+			var mat = new Matrix((Rows, Cols).ToTuple());
+
+			for (var i = 0; i < rows; ++i)
+			{
+				for (var j = 0; j < cols; ++j)
+				{
+					mat._data[i][j] = _data[i][j] * other._data[i][j];
+				}
+			}
+
+			return mat;
 		}
 
 		public void Dispose()
