@@ -1,4 +1,6 @@
-﻿using NNBasicsUtilities.ActivationFunctions;
+﻿using System;
+using System.Diagnostics;
+using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.Abstracts;
 using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
@@ -30,11 +32,15 @@ namespace NNBasicsUtilities.Core.Layers
 
       public new EngineAnswer Proceed(Matrix input)
       {
+	      //var time = Stopwatch.GetTimestamp();
+
          var ans = base.Proceed(input);
          if (_useSoftmax)
          {
             ans.Data = ans.Data.Softmax();
          }
+         //time = Stopwatch.GetTimestamp() - time;
+         //Console.WriteLine($"Proceed time in predict layer: {time}");
          return ans;
       }
 

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace NNBasicsUtilities.Core.Models
 {
-   public class GdEngineAnswer : IDisposable
+   public class GdEngineAnswer
    {
       public EngineAnswer Output { get; }
       public EngineAnswer Deltas { get; }
@@ -26,9 +26,6 @@ namespace NNBasicsUtilities.Core.Models
          return stringBuilder.ToString();
       }
 
-      public void Dispose()
-      {
-         GC.SuppressFinalize(this);
-      }
+
    }
 }
