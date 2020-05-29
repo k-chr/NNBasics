@@ -37,7 +37,7 @@ namespace NNBasicsUtilities.Core
                {
                   provider.GetBytes(bytes);
                   res = BitConverter.ToInt16(bytes, 0) / 30000.0;
-               } while (res < min || res > max || Math.Abs(res) < max / 100.0 || double.IsNaN(res));
+               } while (res < min || res > max || Math.Abs(res) < max / 100.0 || double.IsNaN(res) || Math.Abs(res) < 0.001);
 
                row.Add(res);
 

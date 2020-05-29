@@ -1,4 +1,4 @@
-﻿#define Verbose
+﻿#undef Verbose
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -162,7 +162,7 @@ namespace NNBasicsUtilities.Core
          var endError = 0.0;
          var endErrors = new Matrix(Tuple.Create(1, _predictLayer.Weights.Count));
 
-         var logger = Logger.Instance.StartSession(true, _name, true)
+         var logger = Logger.Instance.StartSession(true, _name)
             .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
          _isLearned = false;
