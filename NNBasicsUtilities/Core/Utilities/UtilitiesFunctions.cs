@@ -47,7 +47,7 @@ namespace NNBasicsUtilities.Core.Utilities
       {
          var mat = new List<List<double>>();
          var runningPath = AppDomain.CurrentDomain.BaseDirectory;
-         using var fs = File.OpenRead($"{Path.GetFullPath(Path.Combine(runningPath, @"..\..\..\"))}Resources\\{name}");
+         using var fs = File.OpenRead($"{Path.GetFullPath(Path.Combine(runningPath, @"..\..\..\..\..\"))}Resources\\{name}");
 
          Console.WriteLine($"Parsing {fs.Name}");
          var bytes = new byte[4];
@@ -96,7 +96,7 @@ namespace NNBasicsUtilities.Core.Utilities
          var labels = new List<List<double>>();
 
          var runningPath = AppDomain.CurrentDomain.BaseDirectory;
-         using var fs = File.OpenRead($"{Path.GetFullPath(Path.Combine(runningPath, @"..\..\..\"))}Resources\\{name}");
+         using var fs = File.OpenRead($"{Path.GetFullPath(Path.Combine(runningPath, @"..\..\..\..\..\"))}Resources\\{name}");
 
          Console.WriteLine($"Parsing {fs.Name}");
          var bytes = new byte[4];
