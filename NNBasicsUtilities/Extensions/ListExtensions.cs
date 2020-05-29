@@ -18,7 +18,7 @@ namespace NNBasicsUtilities.Extensions
 
       public static Matrix ToMatrix(this List<double> input)
       {
-         var mat = new Matrix(( input.Count, 1).ToTuple());
+         var mat = new Matrix((1, input.Count).ToTuple());
 
          var i = 0;
 
@@ -48,7 +48,7 @@ namespace NNBasicsUtilities.Extensions
       {
          var cols = data.First().Count();
          var rows = data.Count();
-         var mat = new Matrix(Tuple.Create(cols, rows));
+         var mat = new Matrix(Tuple.Create(rows, cols));
          var i = 0;
          var j = 0;
 
@@ -71,7 +71,7 @@ namespace NNBasicsUtilities.Extensions
 
       public static Matrix ToMatrix(this List<OutputNeuron> ons)
       {
-         var mat = new Matrix(( ons[0].Weights.Count, ons.Count).ToTuple());
+         var mat = new Matrix(( ons.Count, ons[0].Weights.Count).ToTuple());
          var (i, j) = (0, 0);
 
          foreach (var outputNeuron in ons)
@@ -108,8 +108,20 @@ namespace NNBasicsUtilities.Extensions
 
       public static int ArgMax(this IReadOnlyCollection<double> input)
       {
-         var max = input.Max();
-         return input.Select((d, i) => (d, i)).First(d => Math.Abs(d.d - max) < Tolerance).i;
+        
+         var i = 0;
+         var pos = i;
+         var max = input.First();
+         foreach (var d in input)
+         {
+	         if (d > max)
+	         {
+		         max = d;
+		         pos = i;
+	         }
+	         ++i;
+         }
+         return pos;
       }
 
       private const double Tolerance = double.Epsilon;

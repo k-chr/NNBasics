@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using NNBasicsUtilities.Core.Abstracts;
 using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
@@ -78,9 +79,15 @@ namespace NNBasicsUtilities.Core.Layers
 
       public new EngineAnswer Proceed(Matrix ins)
       {
+	      //var time = Stopwatch.GetTimestamp();
+	      //var subTime = time;
          var ans = base.Proceed(ins);
+         //subTime = Stopwatch.GetTimestamp() - subTime;
+         //Console.WriteLine($"Proceed time in hidden layer calling base method: {subTime}");
+         //subTime = Stopwatch.GetTimestamp();
          ans.Data.ApplyFunction(d => _activationFunction(d));
-
+         //subTime = Stopwatch.GetTimestamp() - subTime;
+         //Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
          if (_applyDropout)
          {
 	         var mat = ans.Data;
@@ -97,7 +104,10 @@ namespace NNBasicsUtilities.Core.Layers
             ans.Data = mat;
          }
 
+         //time = Stopwatch.GetTimestamp() - time;
+         //Console.WriteLine($"Proceed time in hidden layer in total: {time}");
          return ans;
+
       }
 
       public override string ToString()

@@ -2,13 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public class Matrix : IDisposable, IEnumerable<double[]>
+	public class Matrix : IDisposable,  IEnumerable<double[]>
 	{
 		public int Rows { get; }
 
@@ -18,7 +20,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public IEnumerator<double[]> GetEnumerator()
 		{
-			return (IEnumerator<double[]>)_data.GetEnumerator();
+			return _data.AsEnumerable().GetEnumerator();
 		}
 
 		public IReadOnlyCollection<double> this[int x]
@@ -110,17 +112,19 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix(Tuple<int, int> size = null)
 		{
-			var (cols, rows) = size ?? Tuple.Create(1, 1);
+			var (rows, cols) = size ?? Tuple.Create(1, 1);
 			Rows = rows;
 			Cols = cols;
+			_data = new double[Rows][];
 			CreateRows();
-			SetValues(0);
+			//SetValues(0);
 		}
 
 		private Matrix(Matrix values)
 		{
 			Cols = values.Cols;
 			Rows = values.Rows;
+			_data = new double[Rows][];
 			CreateRows();
 			for (var i = 0; i < Rows; ++i)
 			{
@@ -144,8 +148,20 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix Transpose()
 		{
-			var mat = this.SelectMany(inner => inner.Select((item, index) => new { item, index }))
-				.GroupBy(i => i.index, i => i.item).ToMatrix();
+			//var time = Stopwatch.GetTimestamp();
+			var mat = new Matrix((Cols, Rows).ToTuple());
+
+			for (var k = 0; k < Rows * Cols; ++k)
+			{
+				var i = k / Rows;
+				var j = k % Rows;
+				mat._data[i][j] = _data[j][i];
+			}
+
+			//var mat = this.SelectMany(inner => inner.Select((item, index) => new { item, index }))
+				//.GroupBy(i => i.index, i => i.item).ToMatrix();
+			//time = Stopwatch.GetTimestamp() - time;
+			//Console.WriteLine($"Transpose time: {time}");
 			return mat;
 		}
 
@@ -156,17 +172,14 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			var i = 0;
-			foreach (var row in other)
+			var (rows, cols) = (Rows, Cols);
+
+			for (var i = 0; i < rows; ++i)
 			{
-				var j = 0;
-
-				foreach (var d in row)
+				for (var j = 0; j < cols; ++j)
 				{
-					_data[i][j++] += d;
+					_data[i][j] += other._data[i][j];
 				}
-
-				++i;
 			}
 		}
 
@@ -176,18 +189,15 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			{
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
+			
+			var (rows, cols) = (Rows, Cols);
 
-			var i = 0;
-			foreach (var row in other)
+			for (var i = 0; i < rows; ++i)
 			{
-				var j = 0;
-
-				foreach (var d in row)
+				for (var j = 0; j < cols; ++j)
 				{
-					_data[i][j++] -= d;
+					_data[i][j] -= other._data[i][j];
 				}
-
-				++i;
 			}
 		}
 
@@ -198,7 +208,18 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d - d1)).ToMatrix();
+			var (rows, cols) = (first.Rows, first.Cols);
+			var mat = new Matrix((rows, cols).ToTuple());
+
+			for (var i = 0; i < rows; ++i)
+			{
+				for (var j = 0; j < cols; ++j)
+				{
+					mat._data[i][j] = first._data[i][j] - other._data[i][j];
+				}
+			}
+
+			return mat;
 		}
 
 		public static Matrix operator +(Matrix first, Matrix other)
@@ -208,7 +229,18 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d + d1)).ToMatrix();
+			var (rows, cols) = (first.Rows, first.Cols);
+			var mat = new Matrix((rows, cols).ToTuple());
+
+			for (var i = 0; i < rows; ++i)
+			{
+				for (var j = 0; j < cols; ++j)
+				{
+					mat._data[i][j] = first._data[i][j] + other._data[i][j];
+				}
+			}
+
+			return mat;
 		}
 
 		public static Matrix operator *(Matrix first, Matrix other)
@@ -218,13 +250,54 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Multiplication cannot be performed, provided matrices don't match the rule: A.cols == B.rows, where A, B are matrices, cols is count of columns and rows is count of rows");
 			}
 
-			var mat = first.Select(
-				(row, rowId) => other.Transpose()
-											.Select((col, colId) => col.Zip(row, (colCell, rowCell) => colCell * rowCell).Sum()
-											)
-				).ToMatrix();
+			var mat = new Matrix((first.Rows, other.Cols).ToTuple());
+
+			//var threads = new Thread[mat.Rows][];
+
+			//for (var index = 0; index < threads.Length; index++)
+			//{
+			//	threads[index] = new Thread[mat.Cols];
+			//}
+
+			for (var i = 0; i < mat.Rows; ++i)
+			{
+				for (var j = 0; j < mat.Cols; ++j)
+				{
+					//var (x, y) = (i, j);
+					//threads[i][j] = new Thread(_ => mat._data[x][y] = ComputeCell(x, y, other.Rows, first, other));
+					//threads[i][j].Start();
+					var result = 0.0;
+
+					for (var k = 0; k < first.Cols; ++k)
+					{
+						result += first._data[i][k] * other._data[k][j];
+					}
+
+					mat._data[i][j] = result;
+				}
+			}
+
+			//foreach (var threadsArr in threads)
+			//{
+			//	foreach (var t in threadsArr)
+			//	{
+			//		t.Join();
+			//	}
+			//}
 
 			return mat;
+		}
+
+		private static double ComputeCell(int x, int y, int z, Matrix sourceLeft, Matrix sourceRight)
+		{
+			var result = 0.0;
+
+			for (var i = 0; i < z; ++i)
+			{
+				result += sourceLeft._data[x][i] * sourceRight._data[i][y];
+			}
+
+			return result;
 		}
 
 		public static Matrix operator *(Matrix first, double alpha)
@@ -236,12 +309,33 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix HadamardProduct(Matrix other)
 		{
-			return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
+			if (this.Cols != other.Cols || this.Rows != other.Rows)
+			{
+				throw new ArgumentException($"Hadamard product cannot be computed: ({this.Rows}, {this.Cols}) != ({other.Rows}, {other.Cols})");
+			}
+
+			var (rows, cols) = (Rows, Cols);
+			var mat = new Matrix((Rows, Cols).ToTuple());
+
+			for (var i = 0; i < rows; ++i)
+			{
+				for (var j = 0; j < cols; ++j)
+				{
+					mat._data[i][j] = _data[i][j] * other._data[i][j];
+				}
+			}
+
+			return mat;
 		}
 
 		public void Dispose()
 		{
 			GC.SuppressFinalize(this);
+		}
+
+		public static Matrix Copy(Matrix toCopy)
+		{
+			return new Matrix(toCopy);
 		}
 	}
 }

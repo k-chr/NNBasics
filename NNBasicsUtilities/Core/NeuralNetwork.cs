@@ -1,6 +1,7 @@
 ﻿#undef Verbose
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.Layers;
@@ -168,7 +169,7 @@ namespace NNBasicsUtilities.Core
 
          for (var i = 0; i < iterations; ++i, ++_currentIteration)
          {
-            var errors = new Matrix(Tuple.Create(expected[0].Count, 1));
+            var errors = new Matrix(Tuple.Create(1, expected[0].Count));
             var error = 0.0;
             var accuracy = 0;
             for (var index = 0; index < dataSeries.Rows; ++index)
@@ -177,6 +178,7 @@ namespace NNBasicsUtilities.Core
                var expectedOutput = expected[index].ToMatrix();
 
                #region Propagation
+               //var time = Stopwatch.GetTimestamp();
 
                foreach (var layer in _hiddenLayers)
                {
@@ -184,8 +186,10 @@ namespace NNBasicsUtilities.Core
                   rowInput = res.Data;
                }
 
-               ans = _predictLayer.Proceed(rowInput).Data.ToMatrix();
+               ans = _predictLayer.Proceed(rowInput).Data;
 
+               //time = Stopwatch.GetTimestamp() - time;
+               //Console.WriteLine($"Propagation time: {time}");
                #endregion
 
                #region GetDeltasOnPredictionLayer
@@ -214,14 +218,21 @@ namespace NNBasicsUtilities.Core
 
                #region BackPropagation
 
+               //time = Stopwatch.GetTimestamp();
+
                foreach (var hiddenLayer in _hiddenLayers)
                {
                   fAnswer = hiddenLayer.BackPropagate(fAnswer);
                }
 
+               //time = Stopwatch.GetTimestamp() - time;
+               //Console.WriteLine($"Back propagation time: {time}");
                #endregion
 
                #region UpdateWeights
+
+               //time = Stopwatch.GetTimestamp();
+
 
                _predictLayer.Update();
 
@@ -229,9 +240,12 @@ namespace NNBasicsUtilities.Core
                {
                   hiddenLayer.Update();
                }
+               
+               //time = Stopwatch.GetTimestamp() - time;
+               //Console.WriteLine($"Update time: {time}");
 
 #if Verbose
-                  logger = logger.LogLayerInfo(_predictLayer, _hiddenLayers);
+                  //logger = logger.LogLayerInfo(_predictLayer, _hiddenLayers);
 #endif
                #endregion
             }
@@ -262,7 +276,7 @@ namespace NNBasicsUtilities.Core
 
          var ans = new Matrix();
          var endError = 0.0;
-         var endErrors = new Matrix(Tuple.Create(_predictLayer.Weights.Count, 1));
+         var endErrors = new Matrix(Tuple.Create( 1, _predictLayer.Weights.Count));
          var accuracy = 0;
 
          for (var index = 0; index < dataSeries.Rows; ++index)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
@@ -11,10 +12,12 @@ namespace NNBasicsUtilities.Core
    {
       public static EngineAnswer Proceed(Matrix iNs, Matrix oNs)
       {
-	      var rV = iNs * oNs;
+	      //var time = Stopwatch.GetTimestamp();
+	      var rV = iNs * oNs.Transpose();
 
          var ans = new EngineAnswer { Data = rV };
-
+         //time = Stopwatch.GetTimestamp() - time;
+         //Console.WriteLine($"Time to perform proceed in NeuralEngine {time}");
          return ans;
       }
 
@@ -34,7 +37,7 @@ namespace NNBasicsUtilities.Core
                {
                   provider.GetBytes(bytes);
                   res = BitConverter.ToInt16(bytes, 0) / 30000.0;
-               } while (res < min || res > max || Math.Abs(res) < max / 100.0 || double.IsNaN(res));
+               } while (res < min || res > max || Math.Abs(res) < max / 100.0 || double.IsNaN(res) || Math.Abs(res) < 0.001);
 
                row.Add(res);
 

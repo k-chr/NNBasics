@@ -15,7 +15,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
       {
       }
 
-      private string PredictionLayerRangeTag(PredictLayer layer) => $"[Prediction layer initial weight range]<{layer.Weights.Min(list => list.Min())}; {layer.Weights.Max(list => list.Max())}>";
+      private string PredictionLayerRangeTag(PredictLayer layer) => $"[Prediction layer initial weight range]<{layer.Weights.Min(list => list.Min())}; {layer.Weights.Max(list => list.Max())}>\n";
       private string AccuracyTag(double accuracy, double seriesCount) => $"Correct: {accuracy} of {seriesCount} ({(accuracy/(double)seriesCount) * 100}%)\n";
       private string AlphaTag(double alpha) => $"[Alpha]\n{alpha}\n";
       private string CumulativeErrorTag(double error) => $"[Cumulative error]\n{error}\n";
