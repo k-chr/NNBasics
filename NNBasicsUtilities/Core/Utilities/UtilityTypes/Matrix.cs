@@ -10,7 +10,7 @@ using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public class Matrix :  IEnumerable<double[]>
+	public class Matrix : IDisposable,  IEnumerable<double[]>
 	{
 		public int Rows { get; }
 
@@ -153,7 +153,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 			for (var k = 0; k < Rows * Cols; ++k)
 			{
-				var i = k / Cols;
+				var i = k / Rows;
 				var j = k % Rows;
 				mat._data[i][j] = _data[j][i];
 			}
@@ -172,17 +172,14 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			var i = 0;
-			foreach (var row in other)
+			var (rows, cols) = (Rows, Cols);
+
+			for (var i = 0; i < rows; ++i)
 			{
-				var j = 0;
-
-				foreach (var d in row)
+				for (var j = 0; j < cols; ++j)
 				{
-					_data[i][j++] += d;
+					_data[i][j] += other._data[i][j];
 				}
-
-				++i;
 			}
 		}
 
@@ -192,18 +189,15 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			{
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
+			
+			var (rows, cols) = (Rows, Cols);
 
-			var i = 0;
-			foreach (var row in other)
+			for (var i = 0; i < rows; ++i)
 			{
-				var j = 0;
-
-				foreach (var d in row)
+				for (var j = 0; j < cols; ++j)
 				{
-					_data[i][j++] -= d;
+					_data[i][j] -= other._data[i][j];
 				}
-
-				++i;
 			}
 		}
 
@@ -214,7 +208,18 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d - d1)).ToMatrix();
+			var (rows, cols) = (first.Rows, first.Cols);
+			var mat = new Matrix((rows, cols).ToTuple());
+
+			for (var i = 0; i < rows; ++i)
+			{
+				for (var j = 0; j < cols; ++j)
+				{
+					mat._data[i][j] = first._data[i][j] - other._data[i][j];
+				}
+			}
+
+			return mat;
 		}
 
 		public static Matrix operator +(Matrix first, Matrix other)
@@ -224,7 +229,18 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			return first.Select((row, rowId) => row.Zip(other[rowId], (d, d1) => d + d1)).ToMatrix();
+			var (rows, cols) = (first.Rows, first.Cols);
+			var mat = new Matrix((rows, cols).ToTuple());
+
+			for (var i = 0; i < rows; ++i)
+			{
+				for (var j = 0; j < cols; ++j)
+				{
+					mat._data[i][j] = first._data[i][j] + other._data[i][j];
+				}
+			}
+
+			return mat;
 		}
 
 		public static Matrix operator *(Matrix first, Matrix other)
@@ -299,9 +315,14 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
 		}
 
-		//public void Dispose()
-		//{
-		//	GC.SuppressFinalize(this);
-		//}
+		public void Dispose()
+		{
+			GC.SuppressFinalize(this);
+		}
+
+		public static Matrix Copy(Matrix toCopy)
+		{
+			return new Matrix(toCopy);
+		}
 	}
 }
