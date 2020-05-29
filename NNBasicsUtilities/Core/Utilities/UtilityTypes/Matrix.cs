@@ -117,7 +117,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Cols = cols;
 			_data = new double[Rows][];
 			CreateRows();
-			//SetValues(0);
 		}
 
 		private Matrix(Matrix values)
