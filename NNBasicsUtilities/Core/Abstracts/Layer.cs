@@ -50,7 +50,7 @@ namespace NNBasicsUtilities.Core.Abstracts
          LatestAnswer = ans;
          //time = Stopwatch.GetTimestamp() - time;
          //Console.WriteLine($"Layer LatestAnswer assignment time: {time}");
-         return ans;
+         return new EngineAnswer{Data = Matrix.Copy(ans.Data)};
       }
 
       protected Layer(Matrix ons)
