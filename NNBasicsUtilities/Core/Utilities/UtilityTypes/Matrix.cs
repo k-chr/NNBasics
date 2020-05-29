@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -9,7 +10,7 @@ using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public class Matrix : IDisposable, IEnumerable<double[]>
+	public class Matrix :  IEnumerable<double[]>
 	{
 		public int Rows { get; }
 
@@ -147,8 +148,20 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix Transpose()
 		{
-			var mat = this.SelectMany(inner => inner.Select((item, index) => new { item, index }))
-				.GroupBy(i => i.index, i => i.item).ToMatrix();
+			//var time = Stopwatch.GetTimestamp();
+			var mat = new Matrix((Cols, Rows).ToTuple());
+
+			for (var k = 0; k < Rows * Cols; ++k)
+			{
+				var i = k / Cols;
+				var j = k % Rows;
+				mat._data[i][j] = _data[j][i];
+			}
+
+			//var mat = this.SelectMany(inner => inner.Select((item, index) => new { item, index }))
+				//.GroupBy(i => i.index, i => i.item).ToMatrix();
+			//time = Stopwatch.GetTimestamp() - time;
+			//Console.WriteLine($"Transpose time: {time}");
 			return mat;
 		}
 
@@ -223,31 +236,35 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 			var mat = new Matrix((first.Rows, other.Cols).ToTuple());
 			mat.SetValues(0);
-			
-			var threads = new Thread[mat.Rows][];
 
-			for (var index = 0; index < threads.Length; index++)
-			{
-				threads[index] = new Thread[mat.Cols];
-			}
+			//var threads = new Thread[mat.Rows][];
+
+			//for (var index = 0; index < threads.Length; index++)
+			//{
+			//	threads[index] = new Thread[mat.Cols];
+			//}
 
 			for (var i = 0; i < mat.Rows; ++i)
 			{
 				for (var j = 0; j < mat.Cols; ++j)
 				{
-					var (x, y) = (i, j);
-					threads[i][j] = new Thread(_ => mat._data[x][y] = ComputeCell(x, y, other.Rows, first, other));
-					threads[i][j].Start();
+					//var (x, y) = (i, j);
+					//threads[i][j] = new Thread(_ => mat._data[x][y] = ComputeCell(x, y, other.Rows, first, other));
+					//threads[i][j].Start();
+					for (var k = 0; k < first.Cols; ++k)
+					{
+						mat._data[i][j] += first._data[i][k] * other._data[k][j];
+					}
 				}
 			}
 
-			foreach (var threadsArr in threads)
-			{
-				foreach (var t in threadsArr)
-				{
-					t.Join();
-				}
-			}
+			//foreach (var threadsArr in threads)
+			//{
+			//	foreach (var t in threadsArr)
+			//	{
+			//		t.Join();
+			//	}
+			//}
 
 			return mat;
 		}
@@ -282,9 +299,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return this.Zip(other, (row1, row2) => row1.Zip(row2, (d1, d2) => d1 * d2)).ToMatrix();
 		}
 
-		public void Dispose()
-		{
-			GC.SuppressFinalize(this);
-		}
+		//public void Dispose()
+		//{
+		//	GC.SuppressFinalize(this);
+		//}
 	}
 }
