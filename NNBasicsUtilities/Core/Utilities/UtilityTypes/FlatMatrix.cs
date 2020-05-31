@@ -44,6 +44,28 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length);
 		}
 
+		public double this[int x, int y]
+		{
+			get => _data[x * Cols + y];
+			set => _data[x * Cols + y] = value;
+		}
+
+		public void ApplyFunction(Func<double, double> foo)
+		{
+			for (var i = 0; i < _data.Length; _data[i] = foo(_data[i]), ++i) { }
+		}
+
+		public static FlatMatrix Of(int rows, int cols)
+		{
+			return new FlatMatrix(rows, cols);
+		}
+
+		public static FlatMatrix Of(FlatMatrix toCopy)
+		{
+			return new FlatMatrix(toCopy);
+		}
+
+	
 
 	}
 }
