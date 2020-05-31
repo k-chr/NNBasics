@@ -167,6 +167,16 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
+		public static FlatMatrix operator *(FlatMatrix matrix, double alpha)
+		{
+			var mat = new FlatMatrix(matrix.Rows, matrix.Cols);
+			for (var i = 0; i < mat._data.Length; ++i)
+			{
+				mat._data[i] = alpha * matrix._data[i];
+			}
+
+			return mat;
+		}
 
 	}
 }
