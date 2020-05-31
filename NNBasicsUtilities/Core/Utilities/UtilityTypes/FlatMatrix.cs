@@ -28,6 +28,21 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return builder.ToString();
 		}
 
+		private FlatMatrix(in int rows, in int cols)
+		{
+			if (rows < 0 || cols < 0) throw new ArgumentException("Negative size is not supported");
+			Rows = rows;
+			Cols = cols;
+			_data = new double[rows * cols];
+		}
+
+		private FlatMatrix(FlatMatrix toCopy)
+		{
+			Rows = toCopy.Rows;
+			Cols = toCopy.Cols;
+			_data = new double[Rows * Cols];
+			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length);
+		}
 
 
 	}
