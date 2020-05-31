@@ -65,7 +65,20 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return new FlatMatrix(toCopy);
 		}
 
-	
+		public FlatMatrix T()
+		{
+			var dst = new FlatMatrix(Cols, Rows);
+			for (var n = 0; n < _data.Length; ++n)
+			{
+				var i = n / Rows;
+				var j = n % Rows;
+				dst._data[n] = _data[Cols * j + i];
+			}
+
+			return dst;
+		}
+
+		
 
 	}
 }
