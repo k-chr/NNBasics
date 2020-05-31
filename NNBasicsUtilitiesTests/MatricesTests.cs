@@ -28,7 +28,38 @@ namespace NNBasicsUtilitiesTests
 		}
 
 
-		
+		[Fact]
+		public void RangeOperationTests()
+		{
+			_testOutputHelper.WriteLine(_matrix.ToString());
+			var range = _matrix[..3, ..3];
+			_testOutputHelper.WriteLine(range.ToString());
+			range.ApplyFunction(d => 1);
+			_testOutputHelper.WriteLine(range.ToString());
+			_testOutputHelper.WriteLine(_matrix.ToString());
+			_matrix[..3, ..3] = range;
+			_testOutputHelper.WriteLine(_matrix.ToString());
+		}
+
+		[Fact]
+		public void SetRangeTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			_matrix[..3, ..3] = _range;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Range assignment cycles: {start}");
+		}
+
+		[Fact]
+		public void GetRangeTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var range = _matrix[..3, ..3];
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Get range cycles: {start}");
+		}
+
+	
 		
 	}
 }
