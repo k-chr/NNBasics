@@ -59,7 +59,73 @@ namespace NNBasicsUtilitiesTests
 			_testOutputHelper.WriteLine($"Get range cycles: {start}");
 		}
 
-	
+		[Fact]
+		public void TransposeTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			_matrix = _matrix.Transpose();
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Transpose cycles: {start}");
+		}
+
+		[Fact]
+		public void MultiplicationTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+
+			_matrix *= _matrix;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Multiplication cycles: {start}");
+		}
+
+		[Fact]
+		public void HadamardProductTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+
+			_matrix = _matrix.HadamardProduct(_matrix);
+
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Hadamard Multiplication cycles: {start}");
+		}
+
+		[Fact]
+		public void SingleMultiplicationTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var double_ = d * dd;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"single double Multiplication cycles: {start}");
+
+			_testOutputHelper.WriteLine(double_.ToString(CultureInfo.InvariantCulture));
+		}
+
+		[Fact]
+		public void MultipleDoublesTest()
+		{
+			double double_ = 0.0;
+			
+			var start = Stopwatch.GetTimestamp();
+			if(_matrix.Cols != _matrix.Cols) throw new ArgumentException();
+			for (var i = 0; i < _matrix.Rows; ++i)
+			{
+				for (var j = 0; j < _matrix.Cols; ++j)
+				{
+					for (var k = 0; k < _matrix.Cols; ++k)
+					{
+						double_ = _matrix[i, j] * _matrix[i, j];
+						_matrix[i, j] += double_;
+					}
+
+				}
+			}
+			
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"single double Multiplication cycles: {start}");
+			_testOutputHelper.WriteLine(double_.ToString(CultureInfo.InvariantCulture));
+		}
+
+		
 		
 	}
 }
