@@ -125,7 +125,91 @@ namespace NNBasicsUtilitiesTests
 			_testOutputHelper.WriteLine(double_.ToString(CultureInfo.InvariantCulture));
 		}
 
-		
+		[Fact]
+		public void FlatMatrixTransposeTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var transposed = _flat.T();
+			start = Stopwatch.GetTimestamp() - start;
+
+			_testOutputHelper.WriteLine($"Transpose cycles: {start}");
+		}
+
+		[Fact]
+		public void FlatMatrixAddTest()
+		{
+			var transposed = _flat.T();
+			_testOutputHelper.WriteLine(_flat.ToString());
+			var start = Stopwatch.GetTimestamp();
+			_flat.AddMatrix(ref transposed);
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"After add:\n{_flat}");
+			_testOutputHelper.WriteLine($"Addition cycles: {start}");
+		}
+
+		[Fact]
+		public void MatricesAddTest()
+		{
+			var mat = _matrix.ToMatrix();
+
+			_testOutputHelper.WriteLine(_matrix.ToString());
+			var start = Stopwatch.GetTimestamp();
+			_matrix.AddMatrix(mat);
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"After add:\n{_matrix}");
+			_testOutputHelper.WriteLine($"Addition cycles: {start}");
+		}
+
+		[Fact]
+		public void AddOperatorFlatMatTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var mat = _flat + _flat;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Addition op cycles: {start}");
+
+		}
+
+		[Fact]
+		public void AddOperatorNotFlatMatTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var mat = _matrix + _matrix;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Addition op cycles: {start}");
+
+		}
+
+		[Fact]
+		public void CopyFlatTest()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var mat = FlatMatrix.Of(_flat);
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Copy op cycles: {start}");
+		}
+
+		[Fact]
+		public void MulOpTestFlat()
+		{
+			var start = Stopwatch.GetTimestamp();
+			var mat3 = _flat * _flat;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
+			_testOutputHelper.WriteLine(mat3.ToString());
+
+		}
+
+		[Fact]
+		public void TwoLoopMulOpTest()
+		{
+
+			var start = Stopwatch.GetTimestamp();
+			var mat3 = FlatMatrix.TwoLoopMultiply(_flat, _flat);
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
+			_testOutputHelper.WriteLine(mat3.ToString());
+		}
 		
 	}
 }
