@@ -16,7 +16,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public int Cols { get; }
 
-		private readonly double[][] _data;
+		private double[][] _data;
 
 		public IEnumerator<double[]> GetEnumerator()
 		{
@@ -134,6 +134,14 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
+		private Matrix(double[][] values)
+		{
+			var (rows, cols) = (values.Length, values[0].Length);
+			Rows = rows;
+			Cols = cols;
+			_data = values;
+		}
+
 		private void SetValues(double value)
 		{
 			for (var i = 0; i < Rows; ++i)
@@ -144,6 +152,24 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				}
 			}
 		}
+
+		public Matrix this[Range rangeRows, Range rangeCols]
+		{
+			get => new Matrix(Range(rangeCols.End.Value, rangeRows.End.Value, rangeCols.Start.Value, rangeRows.Start.Value));
+			set => _data.SetBlock(value._data, rangeRows, rangeCols);
+
+		}
+
+		public double[][] Range(int cols, int rows, int colsOffset, int rowsOffset)
+		{
+			var doubles = _data[rowsOffset..rows].ToArray();
+			for (var i = 0; i < doubles.Length; ++i)
+			{
+				var d = doubles[i];
+				doubles[i] = d[colsOffset..cols];
+			}
+			return doubles;
+		} 
 
 		public Matrix Transpose()
 		{
