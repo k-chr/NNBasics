@@ -119,7 +119,53 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		
+		public static FlatMatrix operator *(FlatMatrix first, FlatMatrix other)
+		{
+			if (first.Cols != other.Rows)
+			{
+				throw new ArgumentException($"Multiplication cannot be performed, provided matrices don't match the rule of size left.Cols = {first.Cols} != right.Rows = {other.Rows} ");
+			}
+
+			var dst = new FlatMatrix(first.Rows, other.Cols);
+			for (var i = 0; i < dst.Rows; ++i)
+			{
+				for (var j = 0; j < dst.Cols; ++j)
+				{
+					var res = 0.0;
+					for (var k = 0; k < first.Cols; ++k)
+					{
+						res += first._data[i * first.Cols + k] * other._data[k * other.Cols + j];
+					}
+
+					dst._data[i * dst.Cols + j] = res;
+				}
+			}
+			return dst;
+		}
+
+		public static FlatMatrix TwoLoopMultiply(FlatMatrix first, FlatMatrix other)
+		{
+			if (first.Cols != other.Rows)
+			{
+				throw new ArgumentException($"Multiplication cannot be performed, provided matrices don't match the rule of size left.Cols = {first.Cols} != right.Rows = {other.Rows} ");
+			}
+
+			var dst = new FlatMatrix(first.Rows, other.Cols);
+			for (var n = 0; n < dst._data.Length; ++n)
+			{
+				var i = n / other.Cols;
+				var j = n % other.Cols;
+				var res = 0.0;
+				for (var k = 0; k < first.Cols; ++k)
+				{
+					res += first._data[i * first.Cols + k] * other._data[k * other.Cols + j];
+				}
+
+				dst._data[i * other.Cols + j] = res;
+
+			}
+			return dst;
+		}
 
 
 	}
