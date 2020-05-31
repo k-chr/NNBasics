@@ -7,8 +7,19 @@ using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Extensions
 {
-   public static class ListExtensions
+   public static class CollectionsExtensions
    {
+	   public static void SetBlock(this double[][] array, double[][] other, Range rows, Range cols)
+	   {
+		   var start = rows.Start.Value;
+		   var end = rows.End.Value;
+		   Console.WriteLine($"Len: {cols.End.Value - cols.Start.Value}");
+         Console.WriteLine($"StartRow: {start}, EndRow: {end}");
+		   for (var idx = 0;  start < end; ++start, ++idx)
+		   {
+            Array.Copy(other[idx], 0, array[start], cols.Start.Value, cols.End.Value - cols.Start.Value);
+		   }
+	   }
 
       public static List<OutputNeuron> ToOutputNeurons(this List<List<double>> data) => 
          data.Select(d => (OutputNeuron) d).ToList();
