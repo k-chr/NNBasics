@@ -210,6 +210,19 @@ namespace NNBasicsUtilitiesTests
 			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
 			_testOutputHelper.WriteLine(mat3.ToString());
 		}
-		
+
+		[Fact]
+		public void RangeFlatTest()
+		{
+
+
+			var start = Stopwatch.GetTimestamp();
+			var mat2 = _flat[..3, ..3];
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Range copy cycles: {start}");
+			_testOutputHelper.WriteLine(mat2.ToString());
+
+		}
+
 	}
 }
