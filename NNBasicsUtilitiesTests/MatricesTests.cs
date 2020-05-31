@@ -205,7 +205,7 @@ namespace NNBasicsUtilitiesTests
 		{
 
 			var start = Stopwatch.GetTimestamp();
-			var mat3 = FlatMatrix.TwoLoopMultiply(_flat, _flat);
+			var mat3 = FlatMatrix.TwoLoopMultiply(ref _flat, ref _flat);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
 			_testOutputHelper.WriteLine(mat3.ToString());

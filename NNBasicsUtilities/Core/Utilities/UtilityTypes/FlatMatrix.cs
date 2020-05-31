@@ -143,7 +143,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		public static FlatMatrix TwoLoopMultiply(FlatMatrix first, FlatMatrix other)
+		public static FlatMatrix TwoLoopMultiply(ref FlatMatrix first, ref FlatMatrix other)
 		{
 			if (first.Cols != other.Rows)
 			{
@@ -178,5 +178,21 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return mat;
 		}
 
+		public FlatMatrix HadamardProduct(ref FlatMatrix other)
+		{
+			if (Cols != other.Cols || Rows != other.Rows)
+			{
+				throw new ArgumentException($"Hadamard product cannot be computed: ({Rows}, {Cols}) != ({other.Rows}, {other.Cols})");
+			}
+
+			var mat = new FlatMatrix(Rows, Cols);
+
+			for (var i = 0; i < mat._data.Length; ++i)
+			{
+				mat._data[i] = _data[i] * other._data[i];
+			}
+
+			return mat;
+		}
 	}
 }
