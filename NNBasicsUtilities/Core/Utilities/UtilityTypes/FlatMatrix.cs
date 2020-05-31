@@ -5,9 +5,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
 	public struct FlatMatrix
 	{
-		private readonly double[] _data;
-		public readonly int Rows;
-		public readonly int Cols;
+		private double[] _data;
+		public int Rows;
+		public int Cols;
 
 		public override string ToString()
 		{
@@ -44,10 +44,41 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length);
 		}
 
+		private FlatMatrix(double[] data, int rows, int cols)
+		{
+			Rows = rows;
+			Cols = cols;
+			_data = new double[Rows * Cols];
+			Buffer.BlockCopy(data, 0, _data, 0, data.Length);
+		}
+
 		public double this[int x, int y]
 		{
 			get => _data[x * Cols + y];
 			set => _data[x * Cols + y] = value;
+		}
+
+		public FlatMatrix this[Range rows, Range cols]
+		{
+			get
+			{
+				var newCols = cols.End.Value - cols.Start.Value;
+				var newRows = rows.End.Value - rows.Start.Value;
+				var startCol = cols.Start.Value;
+				var startRow = rows.Start.Value;
+				var data = new double[newRows * newCols];
+				for (var i = 0; i < newRows; ++i)
+				{
+					var startInd = (startRow + i) * Cols + startCol;
+					var endInd = startInd + newCols;
+					var range = _data[startInd..endInd];
+					Console.WriteLine(range);
+					Buffer.BlockCopy(range, 0 * sizeof(double), data, i * newCols * sizeof(double), newCols* sizeof(double));
+				}
+
+				var dst = new FlatMatrix {_data = data, Cols = newCols, Rows = newRows};
+				return dst;
+			}
 		}
 
 		public void ApplyFunction(Func<double, double> foo)
