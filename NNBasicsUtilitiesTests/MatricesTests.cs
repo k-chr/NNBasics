@@ -214,15 +214,25 @@ namespace NNBasicsUtilitiesTests
 		[Fact]
 		public void RangeFlatTest()
 		{
-
-
 			var start = Stopwatch.GetTimestamp();
 			var mat2 = _flat[..3, ..3];
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Range copy cycles: {start}");
 			_testOutputHelper.WriteLine(mat2.ToString());
-
 		}
 
+		[Fact]
+		public void RangeSetFlatTest()
+		{
+			var mat2 = _flat[..3, ..3];
+			mat2.ApplyFunction(d1 => 48);
+			_testOutputHelper.WriteLine(_flat.ToString());
+
+			var start = Stopwatch.GetTimestamp();
+			_flat[..3, ..3] = mat2;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Range copy cycles: {start}");
+			_testOutputHelper.WriteLine(_flat.ToString());
+		}
 	}
 }

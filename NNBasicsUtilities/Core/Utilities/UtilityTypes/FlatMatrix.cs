@@ -44,14 +44,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length);
 		}
 
-		private FlatMatrix(double[] data, int rows, int cols)
-		{
-			Rows = rows;
-			Cols = cols;
-			_data = new double[Rows * Cols];
-			Buffer.BlockCopy(data, 0, _data, 0, data.Length);
-		}
-
 		public double this[int x, int y]
 		{
 			get => _data[x * Cols + y];
@@ -62,22 +54,38 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			get
 			{
+				const int doubleSize = sizeof(double);
 				var newCols = cols.End.Value - cols.Start.Value;
 				var newRows = rows.End.Value - rows.Start.Value;
 				var startCol = cols.Start.Value;
 				var startRow = rows.Start.Value;
 				var data = new double[newRows * newCols];
+
 				for (var i = 0; i < newRows; ++i)
 				{
-					var startInd = (startRow + i) * Cols + startCol;
-					var endInd = startInd + newCols;
-					var range = _data[startInd..endInd];
-					Console.WriteLine(range);
-					Buffer.BlockCopy(range, 0 * sizeof(double), data, i * newCols * sizeof(double), newCols* sizeof(double));
+					var destInd = i * newCols * doubleSize;
+					var startInd = ((startRow + i) * Cols + startCol)*doubleSize;
+					var len = newCols * doubleSize;
+					Buffer.BlockCopy(_data, startInd, data, destInd, len);
 				}
 
-				var dst = new FlatMatrix {_data = data, Cols = newCols, Rows = newRows};
-				return dst;
+				return new FlatMatrix { _data = data, Cols = newCols, Rows = newRows };
+			}
+			set
+			{
+				const int doubleSize = sizeof(double);
+				var rowsCount = value.Rows;
+				var colsCount = value.Cols;
+				var startCol = cols.Start.Value;
+				var startRow = rows.Start.Value;
+				var buf = value._data;
+
+				for (var i = 0; i < rowsCount; ++i)
+				{
+					var start = ((startRow + i) * Cols + startCol) * doubleSize;
+					var srcStart = i * colsCount * doubleSize;
+					Buffer.BlockCopy(buf, srcStart, _data, start, colsCount * doubleSize);
+				}
 			}
 		}
 
