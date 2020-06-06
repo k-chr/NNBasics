@@ -99,7 +99,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return new FlatMatrix(rows, cols);
 		}
 
-		public static FlatMatrix Of(FlatMatrix toCopy)
+		public static FlatMatrix Of(ref FlatMatrix toCopy)
 		{
 			return new FlatMatrix(toCopy);
 		}

@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using NHamcrest;
 using NNBasicsUtilities.Core;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 using Xunit;
+using Assert = NHamcrest.XUnit.Assert;
 using Xunit.Abstractions;
 
 namespace NNBasicsUtilitiesTests
@@ -184,9 +186,11 @@ namespace NNBasicsUtilitiesTests
 		public void CopyFlatTest()
 		{
 			var start = Stopwatch.GetTimestamp();
-			var mat = FlatMatrix.Of(_flat);
+			var mat = FlatMatrix.Of(ref _flat);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Copy op cycles: {start}");
+			mat[0, 0] = 2137;
+			Assert.That(mat[0, 0], Is.Not(_flat[0, 0]));
 		}
 
 		[Fact]
