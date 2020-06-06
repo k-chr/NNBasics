@@ -5,9 +5,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
 	public struct FlatMatrix
 	{
-		private readonly double[] _data;
-		public readonly int Rows;
-		public readonly int Cols;
+		private double[] _data;
+		public int Rows;
+		public int Cols;
 
 		public override string ToString()
 		{
@@ -50,6 +50,45 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			set => _data[x * Cols + y] = value;
 		}
 
+		public FlatMatrix this[Range rows, Range cols]
+		{
+			get
+			{
+				const int doubleSize = sizeof(double);
+				var newCols = cols.End.Value - cols.Start.Value;
+				var newRows = rows.End.Value - rows.Start.Value;
+				var startCol = cols.Start.Value;
+				var startRow = rows.Start.Value;
+				var data = new double[newRows * newCols];
+
+				for (var i = 0; i < newRows; ++i)
+				{
+					var destInd = i * newCols * doubleSize;
+					var startInd = ((startRow + i) * Cols + startCol)*doubleSize;
+					var len = newCols * doubleSize;
+					Buffer.BlockCopy(_data, startInd, data, destInd, len);
+				}
+
+				return new FlatMatrix { _data = data, Cols = newCols, Rows = newRows };
+			}
+			set
+			{
+				const int doubleSize = sizeof(double);
+				var rowsCount = value.Rows;
+				var colsCount = value.Cols;
+				var startCol = cols.Start.Value;
+				var startRow = rows.Start.Value;
+				var buf = value._data;
+
+				for (var i = 0; i < rowsCount; ++i)
+				{
+					var start = ((startRow + i) * Cols + startCol) * doubleSize;
+					var srcStart = i * colsCount * doubleSize;
+					Buffer.BlockCopy(buf, srcStart, _data, start, colsCount * doubleSize);
+				}
+			}
+		}
+
 		public void ApplyFunction(Func<double, double> foo)
 		{
 			for (var i = 0; i < _data.Length; _data[i] = foo(_data[i]), ++i) { }
@@ -60,7 +99,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return new FlatMatrix(rows, cols);
 		}
 
-		public static FlatMatrix Of(FlatMatrix toCopy)
+		public static FlatMatrix Of(ref FlatMatrix toCopy)
 		{
 			return new FlatMatrix(toCopy);
 		}
@@ -143,7 +182,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		public static FlatMatrix TwoLoopMultiply(FlatMatrix first, FlatMatrix other)
+		public static FlatMatrix TwoLoopMultiply(ref FlatMatrix first, ref FlatMatrix other)
 		{
 			if (first.Cols != other.Rows)
 			{
@@ -167,6 +206,32 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
+		public static FlatMatrix operator *(FlatMatrix matrix, double alpha)
+		{
+			var mat = new FlatMatrix(matrix.Rows, matrix.Cols);
+			for (var i = 0; i < mat._data.Length; ++i)
+			{
+				mat._data[i] = alpha * matrix._data[i];
+			}
 
+			return mat;
+		}
+
+		public FlatMatrix HadamardProduct(ref FlatMatrix other)
+		{
+			if (Cols != other.Cols || Rows != other.Rows)
+			{
+				throw new ArgumentException($"Hadamard product cannot be computed: ({Rows}, {Cols}) != ({other.Rows}, {other.Cols})");
+			}
+
+			var mat = new FlatMatrix(Rows, Cols);
+
+			for (var i = 0; i < mat._data.Length; ++i)
+			{
+				mat._data[i] = _data[i] * other._data[i];
+			}
+
+			return mat;
+		}
 	}
 }
