@@ -146,6 +146,18 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
+		public static FlatMatrix AddMatrix(ref FlatMatrix first, ref FlatMatrix other)
+		{
+			if (first.Cols != other.Cols || first.Rows != other.Rows)
+			{
+				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+			}
+
+			var dst = new FlatMatrix(first);
+			for (var i = 0; i < first._data.Length; dst._data[i] += other._data[i], ++i) { }
+			return dst;
+	  }
+
 		public static FlatMatrix operator -(FlatMatrix first, FlatMatrix other)
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
@@ -182,7 +194,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		public static FlatMatrix TwoLoopMultiply(ref FlatMatrix first, ref FlatMatrix other)
+		public static FlatMatrix Multiply(ref FlatMatrix first, ref FlatMatrix other)
 		{
 			if (first.Cols != other.Rows)
 			{
