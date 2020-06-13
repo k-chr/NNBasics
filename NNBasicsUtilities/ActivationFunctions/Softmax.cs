@@ -7,7 +7,16 @@ namespace NNBasicsUtilities.ActivationFunctions
 {
 	public static class SoftmaxFunction
 	{
-		public static double[] Softmax(this double[] input) => input.Select(Math.Exp).ToList().Normalize().ToArray();
+		public static double[] Softmax(this double[] input)
+		{
+			var len = input.Length;
+			var output = new double[len];
+			for (var i = 0; i < len; ++i)
+			{
+				output[i] = Math.Exp(input[i]);
+			}
+			return output.Normalize();
+		}
 
 		public static Matrix Softmax(this Matrix input)
 		{
@@ -23,6 +32,18 @@ namespace NNBasicsUtilities.ActivationFunctions
 				}
 
 				++i;
+			}
+
+			return mat;
+		}
+
+		public static FlatMatrix Softmax(this FlatMatrix flatMatrix)
+		{
+			var mat = FlatMatrix.Of(flatMatrix.Rows, flatMatrix.Cols);
+			for (var i = 0; i < flatMatrix.Rows; ++i)
+			{
+				var row = flatMatrix[(Index) i];
+				mat[(Index) i] = row.Softmax();
 			}
 
 			return mat;

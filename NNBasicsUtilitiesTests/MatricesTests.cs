@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using NHamcrest;
+using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
@@ -30,6 +31,16 @@ namespace NNBasicsUtilitiesTests
 			_flat.ApplyFunction(f => 3);
 		}
 
+		[Fact]
+		public void FlatMatrixSoftmaxTest()
+		{
+			_flat[0, 0] = 33;
+			var start = Stopwatch.GetTimestamp();
+			var mat = _flat.Softmax();
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"FlatMatrix softmax cycles: {start}");
+			_testOutputHelper.WriteLine(mat.ToString());
+		}
 
 		[Fact]
 		public void RangeOperationTests()

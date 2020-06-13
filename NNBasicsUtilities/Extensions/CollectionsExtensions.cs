@@ -153,6 +153,27 @@ namespace NNBasicsUtilities.Extensions
 		private const double Tolerance = double.Epsilon;
 
 
+		public static double Sum(this double[] input)
+		{
+			var s = 0.0;
+			for (var i = 0; i < input.Length; s += input[i], ++i) { }
+
+			return s;
+		}
+
+		public static double[] Normalize(this double[] input)
+		{
+			var sum = input.Sum();
+			var len = input.Length;
+			var output = new double[len];
+			for (var i = 0; i < len; ++i)
+			{
+				output[i] = input[i] / sum;
+			}
+
+			return output;
+		}
+
 		public static List<double> Normalize(this List<double> input) => input.Select(d => d / input.Sum()).ToList();
 	}
 }
