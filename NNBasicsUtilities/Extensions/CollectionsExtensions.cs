@@ -114,6 +114,24 @@ namespace NNBasicsUtilities.Extensions
 			return flat;
 		}
 
+		public static void Shuffle<T>(this T[] array)
+		{
+			var provider = new RNGCryptoServiceProvider();
+			var n = array.Length;
+
+			while (n > 1)
+			{
+				var box = new byte[1];
+				do provider.GetBytes(box);
+				while (!(box[0] < n * (byte.MaxValue / n)));
+				var k = (box[0] % n);
+				--n;
+				var value = array[k];
+				array[k] = array[n];
+				array[n] = value;
+			}
+		}
+
 		public static void Shuffle<T>(this IList<T> list)
 		{
 			var provider = new RNGCryptoServiceProvider();
@@ -156,7 +174,9 @@ namespace NNBasicsUtilities.Extensions
 		public static double Sum(this double[] input)
 		{
 			var s = 0.0;
-			for (var i = 0; i < input.Length; s += input[i], ++i) { }
+			for (var i = 0; i < input.Length; s += input[i], ++i)
+			{
+			}
 
 			return s;
 		}

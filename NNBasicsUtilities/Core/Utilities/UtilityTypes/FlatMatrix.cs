@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
@@ -293,7 +294,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return mat;
 		}
 
-		public FlatMatrix HadamardProduct(ref FlatMatrix other)
+		public FlatMatrix HadamardProduct(in FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
@@ -309,6 +310,11 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			return mat;
+		}
+
+		public void Shuffle()
+		{
+			_data.Shuffle();
 		}
 	}
 }
