@@ -60,6 +60,28 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
+		public double[] this[Index i]
+		{
+			get
+			{
+				const int doubleSize = sizeof(double);
+				var newCols = Cols;
+				var data = new double[newCols];
+				var startInd = doubleSize * i.Value * Cols;
+				var len = newCols * doubleSize;
+				Buffer.BlockCopy(_data, startInd, data, 0, len);
+				return data;
+			}
+			set
+			{
+				const int doubleSize = sizeof(double);
+				var newCols = Cols;
+				var startInd = doubleSize * i.Value * Cols;
+				var len = newCols * doubleSize;
+				Buffer.BlockCopy(value, 0, _data, startInd, len);
+			}
+		}
+
 		public double this[int x, int y]
 		{
 			get => _data[x * Cols + y];

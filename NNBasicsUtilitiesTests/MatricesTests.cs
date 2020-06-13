@@ -200,6 +200,30 @@ namespace NNBasicsUtilitiesTests
 		}
 
 		[Fact]
+		public void GetRowFromFlatMatrixAsArray()
+		{
+			_flat[200, 0] = 123;
+			var start = Stopwatch.GetTimestamp();
+			var mat = _flat[(Index) 200];
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Get row op cycles: {start}");
+			_testOutputHelper.WriteLine(mat.ToString());
+		}
+
+		[Fact]
+		public void SetRowOfFlatMatrixAsArray()
+		{
+			_flat[200, 0] = 123;
+			var mat = _flat[(Index) 200];
+			mat[1] = 0xD;
+			var start = Stopwatch.GetTimestamp();
+			_flat[(Index) 200] = mat;
+			start = Stopwatch.GetTimestamp() - start;
+			_testOutputHelper.WriteLine($"Set row op cycles: {start}");
+			_testOutputHelper.WriteLine(_flat[200].ToString());
+		}
+
+		[Fact]
 		public void AddOperatorFlatMatTest()
 		{
 			var start = Stopwatch.GetTimestamp();
