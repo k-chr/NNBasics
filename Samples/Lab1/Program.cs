@@ -24,7 +24,7 @@ namespace Lab1
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed( iN ,  oN.Transpose()).Data);
+         Console.WriteLine(NeuralEngine.Proceed( iN ,  oN.Transpose()));
          Console.ReadKey();
 
          //Task2
@@ -41,7 +41,7 @@ namespace Lab1
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed(input,  oN).Data);
+         Console.WriteLine(NeuralEngine.Proceed(input,  oN));
          Console.ReadKey();
 
          //Task3
@@ -62,7 +62,7 @@ namespace Lab1
 
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         Console.WriteLine(NeuralEngine.Proceed(input, new List<List<double>>(new[] { l1, l2, l3 }).ToMatrix().Transpose()).Data);
+         Console.WriteLine(NeuralEngine.Proceed(input, new List<List<double>>(new[] { l1, l2, l3 }).ToMatrix().Transpose()));
          Console.ReadKey();
 
          //Task4
@@ -85,9 +85,9 @@ namespace Lab1
          var hidden = new List<List<double>>(new[] {l1, l2, l3}).ToMatrix();
          Console.BackgroundColor = ConsoleColor.DarkGray;
          Console.ForegroundColor = ConsoleColor.White;
-         var inputData = NeuralEngine.Proceed(input, hidden.Transpose()).Data;
+         var inputData = NeuralEngine.Proceed(input, hidden.Transpose());
          Console.WriteLine(inputData);
-         Console.WriteLine(NeuralEngine.Proceed(inputData, output.Transpose()).Data);
+         Console.WriteLine(NeuralEngine.Proceed(inputData, output.Transpose()));
          Console.ReadKey();
 
          //Task5
@@ -106,17 +106,17 @@ namespace Lab1
          var h4 = NeuralEngine.GenerateRandomLayer(5, 6, -0.32, 0.23);
          var h5 = NeuralEngine.GenerateRandomLayer(6, 7, -0.32, 0.23);
          var o1 = NeuralEngine.GenerateRandomLayer(7, 3, -0.32, 0.23);
-         var fP1 = NeuralEngine.Proceed(input, h1.Transpose()).Data;
+         var fP1 = NeuralEngine.Proceed(input, h1.Transpose());
          Console.WriteLine(fP1);
-         var fP2 = NeuralEngine.Proceed(fP1, h2.Transpose()).Data;
+         var fP2 = NeuralEngine.Proceed(fP1, h2.Transpose());
 	      Console.WriteLine(fP2);
-         var fP3 = NeuralEngine.Proceed(fP2, h3.Transpose()).Data;
+         var fP3 = NeuralEngine.Proceed(fP2, h3.Transpose());
          Console.WriteLine(fP3);
-         var fP4 = NeuralEngine.Proceed(fP3, h4.Transpose()).Data;
+         var fP4 = NeuralEngine.Proceed(fP3, h4.Transpose());
          Console.WriteLine(fP4);
-         var fP5 = NeuralEngine.Proceed(fP4, h5.Transpose()).Data;
+         var fP5 = NeuralEngine.Proceed(fP4, h5.Transpose());
          Console.WriteLine(fP5);
-         var outAnswer = NeuralEngine.Proceed(fP5, o1.Transpose()).Data;
+         var outAnswer = NeuralEngine.Proceed(fP5, o1.Transpose());
          Console.WriteLine(outAnswer);
          Console.ReadKey();
       }
