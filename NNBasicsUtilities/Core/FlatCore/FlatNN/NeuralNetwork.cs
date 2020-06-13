@@ -155,7 +155,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 		public (FlatMatrix, FlatMatrix, double) Train(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
 			int period = 1)
 		{
-			FlatMatrix ans = new FlatMatrix();
+			var ans = new FlatMatrix();
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 

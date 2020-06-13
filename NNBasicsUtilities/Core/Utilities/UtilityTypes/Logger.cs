@@ -19,7 +19,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			$"[Prediction layer initial weight range]<{layer.Weights.Min(list => list.Min())}; {layer.Weights.Max(list => list.Max())}>\n";
 
 		private string AccuracyTag(double accuracy, double seriesCount) =>
-			$"Correct: {accuracy} of {seriesCount} ({(accuracy / (double) seriesCount) * 100}%)\n";
+			$"Correct: {accuracy} of {seriesCount} ({(accuracy / seriesCount) * 100}%)\n";
 
 		private string AlphaTag(double alpha) => $"[Alpha]\n{alpha}\n";
 		private string CumulativeErrorTag(double error) => $"[Cumulative error]\n{error}\n";
@@ -321,5 +321,182 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 			_currentFile = "";
 		}
+
+		public void LogTestFinalResults(FlatCore.FlatLayers.PredictLayer predictLayer, FlatMatrix testErrors,
+			in double testError, in int accuracy = 0,
+			int seriesCount = 0)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(TestResult);
+			writer.Write(_verbose ? PredictLayerTag(predictLayer) : PredictionLayerRangeTag(predictLayer));
+			writer.Write(ErrorsTag(testErrors));
+			writer.Write(CumulativeErrorTag(testError));
+
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(accuracy, seriesCount));
+			}
+
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(TestResult)
+				   .Append(PredictLayerTag(predictLayer))
+				   .Append(ErrorsTag(testErrors))
+				   .Append(CumulativeErrorTag(testError));
+
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+				}
+			}
+		}
+
+		private string PredictLayerTag(FlatCore.FlatLayers.PredictLayer predictLayer) =>
+			$"[Prediction layer weights]\n{predictLayer}";
+
+		private string PredictionLayerRangeTag(FlatCore.FlatLayers.PredictLayer predictLayer) =>
+			$"[Prediction layer initial weight range]<{predictLayer.Weights.Min()}; {predictLayer.Weights.Max()}>\n";
+
+		private string ErrorsTag(FlatMatrix testErrors) => $"[Error of each neuron]\n{testErrors}";
+
+		public Logger LogSeriesError(FlatMatrix seriesErrors, FlatMatrix ans, in double seriesError, in int seriesIdx,
+			FlatMatrix expectedOutput)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			if (!_verbose) return this;
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(SeriesTag(seriesIdx));
+			writer.Write(ResultTag(ans));
+			writer.Write(ExpectedTag(expectedOutput));
+			writer.Write(ErrorsTag(seriesErrors));
+			writer.Write(CumulativeErrorTag(seriesError));
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			_logBuilder.Append(date)
+			   .Append(SeriesTag(seriesIdx))
+			   .Append(ResultTag(ans))
+			   .Append(ExpectedTag(expectedOutput))
+			   .Append(ErrorsTag(seriesErrors))
+			   .Append(CumulativeErrorTag(seriesError));
+
+			return this;
+		}
+
+		private string ExpectedTag(FlatMatrix expectedOutput) => $"[Expected]\n{expectedOutput}";
+
+		private string ResultTag(FlatMatrix ans) => $"[Result]\n{ans}";
+
+		public Logger LogPreconditions(in int hiddenLayersCount, in double predictLayerAlpha,
+			FlatCore.FlatLayers.PredictLayer predictionLayer)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(Preconditions);
+			writer.Write(_verbose ? PredictLayerTag(predictionLayer) : PredictionLayerRangeTag(predictionLayer));
+			writer.Write(HiddenLayersCountTag(hiddenLayersCount));
+			writer.Write(AlphaTag(predictLayerAlpha));
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(Preconditions)
+				   .Append(PredictLayerTag(predictionLayer))
+				   .Append(HiddenLayersCountTag(hiddenLayersCount))
+				   .Append(AlphaTag(predictLayerAlpha));
+			}
+
+			return this;
+	  }
+
+		public Logger LogIteration(int currentIteration, FlatCore.FlatLayers.PredictLayer predictLayer,
+			FlatMatrix iterationErrors, in double iterationError, in int accuracy, int seriesCount = 0)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(IterationTag(currentIteration));
+			writer.Write(_verbose ? PredictLayerTag(predictLayer) : PredictionLayerRangeTag(predictLayer));
+			writer.Write(ErrorsTag(iterationErrors));
+			writer.Write(CumulativeErrorTag(iterationError));
+
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(accuracy, seriesCount));
+			}
+
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(IterationTag(currentIteration))
+				   .Append(PredictLayerTag(predictLayer))
+				   .Append(ErrorsTag(iterationErrors))
+				   .Append(CumulativeErrorTag(iterationError));
+
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+				}
+			}
+
+			return this;
+	  }
 	}
 }

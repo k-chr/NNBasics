@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using NNBasicsUtilities.Extensions;
 
@@ -316,5 +317,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			_data.Shuffle();
 		}
+
+		public double Min() => _data.Min();
+		public double Max() => _data.Max();
 	}
 }
