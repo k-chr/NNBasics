@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NNBasicsUtilities.ActivationFunctions;
+﻿using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.FlatCore.FlatAbstracts;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
-
 namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 {
 	public abstract class Layer
@@ -38,7 +37,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer Ins assignment time: {time}");
 			//time = Stopwatch.GetTimestamp();
-			var ans = NeuralEngine.Proceed(input, Ons);
+			var ans = FlatNN.NeuralEngine.Proceed(input, Ons);
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer proceed time: {time}");
 			//time = Stopwatch.GetTimestamp();
