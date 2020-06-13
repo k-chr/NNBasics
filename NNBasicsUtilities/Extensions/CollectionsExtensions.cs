@@ -100,6 +100,20 @@ namespace NNBasicsUtilities.Extensions
 			return mat;
 		}
 
+		public static FlatMatrix ToFlatMatrix(this Matrix matrix)
+		{
+			var flat = FlatMatrix.Of(matrix.Rows, matrix.Cols);
+			for (var i = 0; i < matrix.Rows; ++i)
+			{
+				for (var j = 0; j < matrix.Cols; ++j)
+				{
+					flat[i, j] = matrix[i, j];
+				}
+			}
+
+			return flat;
+		}
+
 		public static void Shuffle<T>(this IList<T> list)
 		{
 			var provider = new RNGCryptoServiceProvider();

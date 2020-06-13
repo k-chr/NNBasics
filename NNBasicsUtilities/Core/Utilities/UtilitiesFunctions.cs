@@ -124,5 +124,17 @@ namespace NNBasicsUtilities.Core.Utilities
 				LoadMnistImagesFromFileName("t10k-images-idx3-ubyte"),
 				LoadMnistLabelsFromFileName("t10k-labels-idx1-ubyte"));
 		}
+
+		public static (FlatMatrix, FlatMatrix, FlatMatrix, FlatMatrix) LoadMnistDataBaseToFlatMatrix()
+		{
+			var (m1, m2, m3, m4) = LoadMnistDataBase();
+			return (m1.ToFlatMatrix(), m2.ToFlatMatrix(), m3.ToFlatMatrix(), m4.ToFlatMatrix());
+		}
+
+		public static (FlatMatrix, FlatMatrix) ParseSeriesAndExpectedAnswersFromWebToFlatMatrix(string webUrl)
+		{
+			var (m1, m2) = ParseSeriesAndExpectedAnswersFromWeb(webUrl);
+			return (m1.ToFlatMatrix(), m2.ToFlatMatrix());
+		}
 	}
 }
