@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
@@ -13,8 +12,8 @@ namespace NNBasicsUtilities.Core.Abstracts
    {
       protected Matrix Ins;
       protected Matrix Ons;
-      protected EngineAnswer LatestAnswer;
-      protected EngineAnswer LatestDeltas;
+      protected Matrix LatestAnswer;
+      protected Matrix LatestDeltas;
 
       private double _alpha;
 
@@ -36,7 +35,7 @@ namespace NNBasicsUtilities.Core.Abstracts
          }
       }
 
-      public EngineAnswer Proceed(Matrix input)
+      public Matrix Proceed(Matrix input)
       {
 	      //var time = Stopwatch.GetTimestamp();
          Ins = input;
@@ -50,7 +49,7 @@ namespace NNBasicsUtilities.Core.Abstracts
          LatestAnswer = ans;
          //time = Stopwatch.GetTimestamp() - time;
          //Console.WriteLine($"Layer LatestAnswer assignment time: {time}");
-         return new EngineAnswer{Data = Matrix.Copy(ans.Data)};
+         return Matrix.Copy(ans);
       }
 
       protected Layer(Matrix ons)
@@ -58,11 +57,9 @@ namespace NNBasicsUtilities.Core.Abstracts
          Ons = ons;
       }
 
-      protected void UpdateWeights(GdEngineAnswer answer)
+      protected void UpdateWeights(Matrix deltas)
       {
-         var deltas = answer.Deltas;
-
-         var mat =  deltas.Data.Transpose() * Ins;
+         var mat =  deltas.Transpose() * Ins;
          Ons.SubtractMatrix(mat * Alpha);
       }
    }

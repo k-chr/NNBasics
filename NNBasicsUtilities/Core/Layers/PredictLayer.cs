@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.Abstracts;
-using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Core.Layers
@@ -16,28 +15,28 @@ namespace NNBasicsUtilities.Core.Layers
          _useSoftmax = useSoftmax;
       }
 
-      public FeedbackAnswer GetDeltas(EngineAnswer expectedAnswer)
+      public (Matrix, Matrix) GetDeltas(Matrix expectedAnswer)
       {
          var thisLayerResponse = LatestAnswer;
-         var deltas = thisLayerResponse.Data - expectedAnswer.Data;
-         var ans = new EngineAnswer() { Data = deltas };
+         var deltas = thisLayerResponse - expectedAnswer;
+         var ans =  deltas;
          LatestDeltas = ans;
-         return new FeedbackAnswer(){Deltas = ans, Ons = Ons};
+         return (ans,Ons);
       }
 
       public void Update()
       {
-         UpdateWeights(new GdEngineAnswer(LatestAnswer, LatestDeltas));
+         UpdateWeights(LatestDeltas);
       }
 
-      public new EngineAnswer Proceed(Matrix input)
+      public new Matrix Proceed(Matrix input)
       {
 	      //var time = Stopwatch.GetTimestamp();
 
          var ans = base.Proceed(input);
          if (_useSoftmax)
          {
-            ans.Data = ans.Data.Softmax();
+            ans = ans.Softmax();
          }
          //time = Stopwatch.GetTimestamp() - time;
          //Console.WriteLine($"Proceed time in predict layer: {time}");
