@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
-using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
@@ -10,15 +9,15 @@ namespace NNBasicsUtilities.Core
 {
    public class NeuralEngine
    {
-      public static EngineAnswer Proceed(Matrix iNs, Matrix oNs)
+      public static Matrix Proceed(Matrix iNs, Matrix oNs)
       {
 	      //var time = Stopwatch.GetTimestamp();
 	      var rV = iNs * oNs.Transpose();
 
-         var ans = new EngineAnswer { Data = rV };
+         
          //time = Stopwatch.GetTimestamp() - time;
          //Console.WriteLine($"Time to perform proceed in NeuralEngine {time}");
-         return ans;
+         return rV;
       }
 
       public static Matrix GenerateRandomLayer(int cols, int rows, double min, double max)
