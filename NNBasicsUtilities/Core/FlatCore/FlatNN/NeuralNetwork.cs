@@ -36,7 +36,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 		{
 			public sealed class HiddenLayerBuilder
 			{
-				private readonly FlatMatrix _layerNeurons;
+				private FlatMatrix _layerNeurons;
 				private Func<double, double> _fx;
 				private Func<double, double> _dfx;
 				private readonly NeuralNetworkBuilder _parentBuilder;
@@ -152,10 +152,12 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			}
 		}
 
-		public (FlatMatrix, FlatMatrix, double) Train(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
+		public (FlatMatrix, FlatMatrix, double) Train(ref FlatMatrix expected, ref FlatMatrix dataSeries, int iterations,
 			int period = 1)
 		{
-			var ans = new FlatMatrix();
+			var flatMatrix = new FlatMatrix();
+
+			ref var ans = ref flatMatrix;
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 
@@ -193,18 +195,18 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					#region GetDeltasOnPredictionLayer
 
-					var fAnswer = _predictLayer.GetDeltas(expectedOutput);
+					var (fAnswer, ons) =  _predictLayer.GetDeltas(expectedOutput);
 
 					#endregion
 
 					#region ErrorCummulation
 
-					var seriesError = fAnswer.Item1[(Index)0].Sum(d => d * d);
-					var seriesErrors = fAnswer.Item1.HadamardProduct(fAnswer.Item1);
+					var seriesError = fAnswer[(Index)0].Sum(d => d * d);
+					var seriesErrors = fAnswer.HadamardProduct(fAnswer);
 					error += seriesError;
-					errors.AddMatrix(ref seriesErrors);
+					errors.AddMatrix(seriesErrors);
 
-					if (fAnswer.Item1.Cols > 1)
+					if (fAnswer.Cols > 1)
 					{
 						accuracy += ans[(Index)0].ArgMax() == expectedOutput[(Index)0].ArgMax() ? 1 : 0;
 					}
@@ -221,7 +223,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					foreach (var hiddenLayer in _hiddenLayers)
 					{
-						fAnswer = hiddenLayer.BackPropagate(fAnswer.Item1, fAnswer.Item2);
+						(fAnswer, ons) = hiddenLayer.BackPropagate( fAnswer, ons);
 					}
 
 					//time = Stopwatch.GetTimestamp() - time;
@@ -277,7 +279,8 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			var logger = Logger.Instance.StartSession(name: _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
-			var ans = new FlatMatrix();
+			var matrix = FlatMatrix.Of(0,0);
+			ref var ans = ref matrix;
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 			var accuracy = 0;
@@ -308,9 +311,9 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 				#region ErrorCummulation
 
 				var seriesError = flatMatrix[(Index)0].Sum(d => d * d);
-				var seriesErrors = flatMatrix.HadamardProduct(in flatMatrix);
+				var seriesErrors = flatMatrix.HadamardProduct(flatMatrix);
 				endError += seriesError;
-				endErrors.AddMatrix(ref seriesErrors);
+				endErrors.AddMatrix(seriesErrors);
 
 				if (flatMatrix.Cols > 1)
 				{

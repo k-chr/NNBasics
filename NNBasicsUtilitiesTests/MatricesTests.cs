@@ -28,7 +28,7 @@ namespace NNBasicsUtilitiesTests
 			_range = new Matrix((3, 3).ToTuple());
 			_range.ApplyFunction(d => 1);
 			_flat = FlatMatrix.Of(500, 500);
-			_flat.ApplyFunction(f => 3);
+			_flat.ApplyFunction(f => 5);
 		}
 
 		[Fact]
@@ -154,7 +154,7 @@ namespace NNBasicsUtilitiesTests
 			var transposed = _flat.T();
 			_testOutputHelper.WriteLine(_flat.ToString());
 			var start = Stopwatch.GetTimestamp();
-			_flat.AddMatrix(ref transposed);
+			_flat.AddMatrix(transposed);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"After add:\n{_flat}");
 			_testOutputHelper.WriteLine($"Addition cycles: {start}");
@@ -165,7 +165,7 @@ namespace NNBasicsUtilitiesTests
 		{
 			var transposed = _flat.T();
 			var start = Stopwatch.GetTimestamp();
-			var mat = FlatMatrix.AddMatrix(ref _flat, ref transposed);
+			var mat = FlatMatrix.AddMatrix(_flat,  transposed);
 			start = Stopwatch.GetTimestamp() - start;
 			//_testOutputHelper.WriteLine($"After add:\n{_flat}");
 			_testOutputHelper.WriteLine($"Ref Addition cycles: {start}");
@@ -194,7 +194,7 @@ namespace NNBasicsUtilitiesTests
 		public void AddRefFlatMatrix()
 		{
 			var start = Stopwatch.GetTimestamp();
-			var mat = FlatMatrix.AddMatrix(ref _flat, ref _flat);
+			var mat = FlatMatrix.AddMatrix(_flat,  _flat);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Addition op cycles: {start}");
 		}
@@ -256,7 +256,7 @@ namespace NNBasicsUtilitiesTests
 		public void CopyFlatTest()
 		{
 			var start = Stopwatch.GetTimestamp();
-			var mat = FlatMatrix.Of(ref _flat);
+			var mat = FlatMatrix.Of(_flat);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Copy op cycles: {start}");
 			mat[0, 0] = 2137;
@@ -277,7 +277,7 @@ namespace NNBasicsUtilitiesTests
 		public void TwoLoopMulOpTest()
 		{
 			var start = Stopwatch.GetTimestamp();
-			var mat3 = FlatMatrix.Multiply(ref _flat, ref _flat);
+			var mat3 = FlatMatrix.Multiply( _flat, _flat);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
 			_testOutputHelper.WriteLine(mat3.ToString());
@@ -298,7 +298,7 @@ namespace NNBasicsUtilitiesTests
 		{
 			var mat2 = _flat[..3, ..3];
 			mat2.ApplyFunction(d1 => 48);
-			_testOutputHelper.WriteLine(_flat.ToString());
+			//_testOutputHelper.WriteLine(_flat.ToString());
 
 			var start = Stopwatch.GetTimestamp();
 			_flat[..3, ..3] = mat2;

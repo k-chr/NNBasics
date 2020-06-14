@@ -7,6 +7,7 @@ using BenchmarkAttribute = BenchmarkDotNet.Attributes.BenchmarkAttribute;
 namespace MatricesBenchmark
 {
 	[RPlotExporter]
+	
 	[JsonExporter("haha.json", true, false)]
 	[LegacyJitX64Job, LegacyJitX86Job, RyuJitX64Job]
 	public class Benchmarking
@@ -29,7 +30,7 @@ namespace MatricesBenchmark
 			ref var mat1 = ref array;
 			for (var i = 0; i < 16; ++i)
 			{
-				var mat = FlatMatrix.Multiply(ref mat1, ref mat1);
+				var mat = FlatMatrix.Multiply(mat1, mat1);
 			}
 		}
 

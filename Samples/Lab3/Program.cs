@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core;
+using FlatNetwork = NNBasicsUtilities.Core.FlatCore.FlatNN.NeuralNetwork;
 using NNBasicsUtilities.Extensions;
 using static NNBasicsUtilities.Core.Utilities.UtilitiesFunctions;
 
@@ -77,25 +78,41 @@ namespace Lab3
 			networkTask3.Train(matExpected, matSeries, 100);
 			networkTask3.Test(testExpected, testSeries);
 
-			#endregion
+		 #endregion
 
-			#region Task4
+		 var networkTask4 =
+			 FlatNetwork.Builder.AttachPredictionLayer(10, 40, 0.1, -0.1)
+				.AttachHiddenLayer(40, 784, 0.1, -0.1)
+				.ApplyActivationFunction(ReluFunctions.Relu)
+				.ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
+				.BuildHiddenLayer()
+				.WithAlpha(0.01)
+				.ApplyTheNameOfYourNetwork("Lab3_Task4_MNIST_Flat")
+				.BuildNetwork();
 
-			var networkTask4 =
-				NeuralNetwork.Builder.AttachPredictionLayer(10, 40, 0.1, -0.1)
-				   .AttachHiddenLayer(40, 784, 0.1, -0.1)
-				   .ApplyActivationFunction(ReluFunctions.Relu)
-				   .ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
-				   .BuildHiddenLayer()
-				   .WithAlpha(0.01)
-				   .ApplyTheNameOfYourNetwork("Lab3_Task4_MNIST")
-				   .BuildNetwork();
+		 var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBaseToFlatMatrix();
 
-			var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBase();
+		 networkTask4.Train(ref trainingLabels, ref trainingSet, 300);
 
-			networkTask4.Train(trainingLabels, trainingSet, 300);
+		 networkTask4.Test(testLabels, testSet);
 
-			networkTask4.Test(testLabels, testSet);
+		 #region Task4
+
+		 //var networkTask4 =
+			//	NeuralNetwork.Builder.AttachPredictionLayer(10, 40, 0.1, -0.1)
+			//	   .AttachHiddenLayer(40, 784, 0.1, -0.1)
+			//	   .ApplyActivationFunction(ReluFunctions.Relu)
+			//	   .ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
+			//	   .BuildHiddenLayer()
+			//	   .WithAlpha(0.01)
+			//	   .ApplyTheNameOfYourNetwork("Lab3_Task4_MNIST")
+			//	   .BuildNetwork();
+
+			//var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBase();
+
+			//networkTask4.Train(trainingLabels, trainingSet, 300);
+
+			//networkTask4.Test(testLabels, testSet);
 
 			#endregion
 		}
