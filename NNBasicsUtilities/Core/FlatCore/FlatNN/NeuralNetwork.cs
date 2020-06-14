@@ -1,4 +1,6 @@
-﻿using System;
+﻿#undef Verbose
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NNBasicsUtilities.ActivationFunctions;
@@ -36,7 +38,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 		{
 			public sealed class HiddenLayerBuilder
 			{
-				private FlatMatrix _layerNeurons;
+				private readonly FlatMatrix _layerNeurons;
 				private Func<double, double> _fx;
 				private Func<double, double> _dfx;
 				private readonly NeuralNetworkBuilder _parentBuilder;
@@ -152,12 +154,10 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			}
 		}
 
-		public (FlatMatrix, FlatMatrix, double) Train(ref FlatMatrix expected, ref FlatMatrix dataSeries, int iterations,
+		public (FlatMatrix, FlatMatrix, double) Train(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
 			int period = 1)
 		{
-			var flatMatrix = new FlatMatrix();
-
-			ref var ans = ref flatMatrix;
+			var ans = new FlatMatrix();
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 
@@ -279,8 +279,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			var logger = Logger.Instance.StartSession(name: _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
-			var matrix = FlatMatrix.Of(0,0);
-			ref var ans = ref matrix;
+			var ans = FlatMatrix.Of(0,0);
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 			var accuracy = 0;

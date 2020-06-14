@@ -6,7 +6,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 	public abstract class Layer
 	{
 		protected FlatMatrix Ins;
-		protected FlatMatrix Ons;
+		protected readonly FlatMatrix Ons;
 		protected FlatMatrix LatestAnswer;
 		protected FlatMatrix LatestDeltas;
 
@@ -37,13 +37,15 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer Ins assignment time: {time}");
 			//time = Stopwatch.GetTimestamp();
-			LatestAnswer = FlatNN.NeuralEngine.Proceed(input,  Ons);
+			var ans = FlatNN.NeuralEngine.Proceed(input,  Ons);
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer proceed time: {time}");
 			//time = Stopwatch.GetTimestamp();
+			LatestAnswer = ans;
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer LatestAnswer assignment time: {time}");
-			return LatestAnswer;
+
+			return FlatMatrix.Of(ans);
 		}
 
 		protected Layer(FlatMatrix ons)

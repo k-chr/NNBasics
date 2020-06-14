@@ -363,7 +363,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public void Dispose()
 		{
-			GC.SuppressFinalize(this);
+			//GC.SuppressFinalize(this);
 		}
 
 		public static Matrix Copy(Matrix toCopy)

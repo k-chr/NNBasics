@@ -16,10 +16,11 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 	   public (FlatMatrix, FlatMatrix) GetDeltas(FlatMatrix expectedAnswer)
 	   {
 		   var thisLayerResponse = LatestAnswer;
-		   LatestDeltas = thisLayerResponse - expectedAnswer;
-		   
-		   return (LatestDeltas, Ons);
-	   }
+		   var deltas = thisLayerResponse - expectedAnswer;
+		   var ans = deltas;
+		   LatestDeltas = ans;
+		   return (ans, Ons);
+	  }
 
 	   public void Update()
 	   {

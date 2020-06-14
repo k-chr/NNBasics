@@ -35,7 +35,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 		}
 
-		private FlatMatrix(in int rows, in int cols)
+		private FlatMatrix(int rows, int cols)
 		{
 			if (rows < 0 || cols < 0) throw new ArgumentException("Negative size is not supported");
 			Rows = rows;
@@ -48,7 +48,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Rows = toCopy.Rows;
 			Cols = toCopy.Cols;
 			_data = new double[Rows * Cols];
-			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length);
+			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length*sizeof(double));
 		}
 
 		public FlatMatrix this[int i]
@@ -135,8 +135,10 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public void ApplyFunction(Func<double, double> foo)
 		{
-			for (var i = 0; i < _data.Length; _data[i] = foo(_data[i]), ++i)
+			for (var i = 0; i < _data.Length; ++i)
 			{
+				var value = foo(_data[i]);
+				_data[i] = value;
 			}
 		}
 
@@ -171,8 +173,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 					"Subtraction cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			for (var i = 0; i < _data.Length; _data[i] -= (other._data[i]), ++i)
+			for (var i = 0; i < _data.Length; ++i)
 			{
+				_data[i] -= (other._data[i]);
 			}
 		}
 
@@ -184,8 +187,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
-			for (var i = 0; i < _data.Length; _data[i] += (other._data[i]), ++i)
+			for (var i = 0; i < _data.Length; ++i)
 			{
+				_data[i] += (other._data[i]);
 			}
 		}
 
@@ -198,8 +202,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			var dst = new FlatMatrix(first);
-			for (var i = 0; i < first._data.Length; dst._data[i] += other._data[i], ++i)
+			for (var i = 0; i < first._data.Length; ++i)
 			{
+				dst._data[i] += other._data[i];
 			}
 
 			return dst;
@@ -214,8 +219,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			var dst = new FlatMatrix(first);
-			for (var i = 0; i < first._data.Length; dst._data[i] += other._data[i], ++i)
+			for (var i = 0; i < first._data.Length; ++i)
 			{
+				dst._data[i] += other._data[i];
 			}
 
 			return dst;
@@ -230,8 +236,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			var dst = new FlatMatrix(first);
-			for (var i = 0; i < first._data.Length; dst._data[i] -= other._data[i], ++i)
+			for (var i = 0; i < first._data.Length; ++i)
 			{
+				dst._data[i] -= other._data[i];
 			}
 
 			return dst;
@@ -327,16 +334,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public void Dispose()
 		{
-			Dispose(true);
 			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool freeManaged)
-		{
-			if (freeManaged)
-			{
-				_data = null;
-			}
 		}
 	}
 }

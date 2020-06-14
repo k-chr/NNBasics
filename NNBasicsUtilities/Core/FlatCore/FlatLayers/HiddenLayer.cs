@@ -56,19 +56,22 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public (FlatMatrix, FlatMatrix) BackPropagate(FlatMatrix deltas, FlatMatrix ons)
 		{
-			ref var thisLayerResponse = ref LatestAnswer;
-			var data = deltas * ons;
+			var thisLayerResponse = LatestAnswer;
+			var matrix = deltas * ons;
+			var data = matrix;
 			thisLayerResponse.ApplyFunction(d => _activationFunctionDerivative(d));
 			data = data.HadamardProduct(thisLayerResponse);
 
 			if (_applyDropout)
 			{
-				data = data.HadamardProduct(_dropout);
+				var mat = data.HadamardProduct(_dropout);
+				data = mat;
 			}
 
-			LatestDeltas = data;
-			return (LatestDeltas, Ons);
-		}
+			var ans = data;
+			LatestDeltas = ans;
+			return (ans, Ons);
+	  }
 
 		public void Update()
 		{
@@ -77,15 +80,15 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public new FlatMatrix Proceed(FlatMatrix ins)
 		{
-			var time = Stopwatch.GetTimestamp();
-			var subTime = time;
+			//var time = Stopwatch.GetTimestamp();
+			//var subTime = time;
 			var ans = base.Proceed(ins);
-			subTime = Stopwatch.GetTimestamp() - subTime;
-			Console.WriteLine($"Proceed time in hidden layer calling base method: {subTime}");
-			subTime = Stopwatch.GetTimestamp();
+			//subTime = Stopwatch.GetTimestamp() - subTime;
+			//Console.WriteLine($"Proceed time in hidden layer calling base method: {subTime}");
+			//subTime = Stopwatch.GetTimestamp();
 			ans.ApplyFunction(d => _activationFunction(d));
-			subTime = Stopwatch.GetTimestamp() - subTime;
-			Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
+			//subTime = Stopwatch.GetTimestamp() - subTime;
+			//Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
 			if (_applyDropout)
 			{
 				var mat = ans;

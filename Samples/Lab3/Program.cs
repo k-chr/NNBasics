@@ -60,13 +60,13 @@ namespace Lab3
 			#region Task3
 
 			var (matSeries, matExpected) =
-				ParseSeriesAndExpectedAnswersFromWeb(@"http://pduch.iis.p.lodz.pl/PSI/training_colors.txt");
+				ParseSeriesAndExpectedAnswersFromWebToFlatMatrix(@"http://pduch.iis.p.lodz.pl/PSI/training_colors.txt");
 
 			var (testSeries, testExpected) =
-				ParseSeriesAndExpectedAnswersFromWeb(@"http://pduch.iis.p.lodz.pl/PSI/test_colors.txt");
+				ParseSeriesAndExpectedAnswersFromWebToFlatMatrix(@"http://pduch.iis.p.lodz.pl/PSI/test_colors.txt");
 
 			var networkTask3 =
-				NeuralNetwork.Builder.AttachPredictionLayer(4, 4, 0.1, -0.1)
+				FlatNetwork.Builder.AttachPredictionLayer(4, 4, 0.1, -0.1)
 				   .AttachHiddenLayer(4, 3, 0.1, -0.1)
 				   .ApplyActivationFunction(ReluFunctions.Relu)
 				   .ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
@@ -92,29 +92,29 @@ namespace Lab3
 
 		 var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBaseToFlatMatrix();
 
-		 networkTask4.Train(ref trainingLabels, ref trainingSet, 300);
+		 networkTask4.Train(trainingLabels, trainingSet, 300);
 
 		 networkTask4.Test(testLabels, testSet);
 
 		 #region Task4
 
 		 //var networkTask4 =
-			//	NeuralNetwork.Builder.AttachPredictionLayer(10, 40, 0.1, -0.1)
-			//	   .AttachHiddenLayer(40, 784, 0.1, -0.1)
-			//	   .ApplyActivationFunction(ReluFunctions.Relu)
-			//	   .ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
-			//	   .BuildHiddenLayer()
-			//	   .WithAlpha(0.01)
-			//	   .ApplyTheNameOfYourNetwork("Lab3_Task4_MNIST")
-			//	   .BuildNetwork();
+		 //	NeuralNetwork.Builder.AttachPredictionLayer(10, 40, 0.1, -0.1)
+		 //	   .AttachHiddenLayer(40, 784, 0.1, -0.1)
+		 //	   .ApplyActivationFunction(ReluFunctions.Relu)
+		 //	   .ApplyActivationFunctionDerivative(ReluFunctions.ReluDerivative)
+		 //	   .BuildHiddenLayer()
+		 //	   .WithAlpha(0.01)
+		 //	   .ApplyTheNameOfYourNetwork("Lab3_Task4_MNIST")
+		 //	   .BuildNetwork();
 
-			//var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBase();
+		 //var (trainingSet, trainingLabels, testSet, testLabels) = LoadMnistDataBase();
 
-			//networkTask4.Train(trainingLabels, trainingSet, 300);
+		 //networkTask4.Train(trainingLabels, trainingSet, 300);
 
-			//networkTask4.Test(testLabels, testSet);
+		 //networkTask4.Test(testLabels, testSet);
 
-			#endregion
-		}
+		 #endregion
+	  }
 	}
 }
