@@ -5,7 +5,7 @@ using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public struct FlatMatrix
+	public class FlatMatrix : IDisposable
 	{
 		private double[] _data;
 		public int Rows;
@@ -29,6 +29,10 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			return builder.ToString();
+		}
+
+		public FlatMatrix()
+		{
 		}
 
 		private FlatMatrix(in int rows, in int cols)
@@ -141,7 +145,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return new FlatMatrix(rows, cols);
 		}
 
-		public static FlatMatrix Of(ref FlatMatrix toCopy)
+		public static FlatMatrix Of(FlatMatrix toCopy)
 		{
 			return new FlatMatrix(toCopy);
 		}
@@ -159,7 +163,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		public void SubtractMatrix(ref FlatMatrix other)
+		public void SubtractMatrix(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
@@ -172,7 +176,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
-		public void AddMatrix(ref FlatMatrix other)
+		public void AddMatrix(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
@@ -201,7 +205,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		public static FlatMatrix AddMatrix(ref FlatMatrix first, ref FlatMatrix other)
+		public static FlatMatrix AddMatrix(FlatMatrix first, FlatMatrix other)
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
 			{
@@ -259,7 +263,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return dst;
 		}
 
-		public static FlatMatrix Multiply(ref FlatMatrix first, ref FlatMatrix other)
+		public static FlatMatrix Multiply(FlatMatrix first, FlatMatrix other)
 		{
 			if (first.Cols != other.Rows)
 			{
@@ -295,7 +299,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return mat;
 		}
 
-		public FlatMatrix HadamardProduct(in FlatMatrix other)
+		public FlatMatrix HadamardProduct(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
@@ -320,5 +324,19 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public double Min() => _data.Min();
 		public double Max() => _data.Max();
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool freeManaged)
+		{
+			if (freeManaged)
+			{
+				_data = null;
+			}
+		}
 	}
 }
