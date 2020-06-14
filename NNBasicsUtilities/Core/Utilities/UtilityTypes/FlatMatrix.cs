@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
+using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public struct FlatMatrix
+	public class FlatMatrix : IDisposable
 	{
 		private double[] _data;
 		public int Rows;
@@ -18,6 +20,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				{
 					builder.Append("| ");
 				}
+
 				builder.Append(_data[i]).Append(' ');
 				if ((i + 1) % (Cols) == 0)
 				{
@@ -28,7 +31,11 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return builder.ToString();
 		}
 
-		private FlatMatrix(in int rows, in int cols)
+		public FlatMatrix()
+		{
+		}
+
+		private FlatMatrix(int rows, int cols)
 		{
 			if (rows < 0 || cols < 0) throw new ArgumentException("Negative size is not supported");
 			Rows = rows;
@@ -41,7 +48,44 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Rows = toCopy.Rows;
 			Cols = toCopy.Cols;
 			_data = new double[Rows * Cols];
-			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length);
+			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length*sizeof(double));
+		}
+
+		public FlatMatrix this[int i]
+		{
+			get
+			{
+				const int doubleSize = sizeof(double);
+				var newCols = Cols;
+				var newRows = 1;
+				var data = new double[newCols];
+				var startInd = doubleSize * i * Cols;
+				var len = newCols * doubleSize;
+				Buffer.BlockCopy(_data, startInd, data, 0, len);
+				return new FlatMatrix {_data = data, Cols = newCols, Rows = newRows};
+			}
+		}
+
+		public double[] this[Index i]
+		{
+			get
+			{
+				const int doubleSize = sizeof(double);
+				var newCols = Cols;
+				var data = new double[newCols];
+				var startInd = doubleSize * i.Value * Cols;
+				var len = newCols * doubleSize;
+				Buffer.BlockCopy(_data, startInd, data, 0, len);
+				return data;
+			}
+			set
+			{
+				const int doubleSize = sizeof(double);
+				var newCols = Cols;
+				var startInd = doubleSize * i.Value * Cols;
+				var len = newCols * doubleSize;
+				Buffer.BlockCopy(value, 0, _data, startInd, len);
+			}
 		}
 
 		public double this[int x, int y]
@@ -64,12 +108,12 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				for (var i = 0; i < newRows; ++i)
 				{
 					var destInd = i * newCols * doubleSize;
-					var startInd = ((startRow + i) * Cols + startCol)*doubleSize;
+					var startInd = ((startRow + i) * Cols + startCol) * doubleSize;
 					var len = newCols * doubleSize;
 					Buffer.BlockCopy(_data, startInd, data, destInd, len);
 				}
 
-				return new FlatMatrix { _data = data, Cols = newCols, Rows = newRows };
+				return new FlatMatrix {_data = data, Cols = newCols, Rows = newRows};
 			}
 			set
 			{
@@ -91,7 +135,11 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public void ApplyFunction(Func<double, double> foo)
 		{
-			for (var i = 0; i < _data.Length; _data[i] = foo(_data[i]), ++i) { }
+			for (var i = 0; i < _data.Length; ++i)
+			{
+				var value = foo(_data[i]);
+				_data[i] = value;
+			}
 		}
 
 		public static FlatMatrix Of(int rows, int cols)
@@ -99,7 +147,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return new FlatMatrix(rows, cols);
 		}
 
-		public static FlatMatrix Of(ref FlatMatrix toCopy)
+		public static FlatMatrix Of(FlatMatrix toCopy)
 		{
 			return new FlatMatrix(toCopy);
 		}
@@ -116,33 +164,66 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 			return dst;
 		}
-		public void SubtractMatrix(ref FlatMatrix other)
+
+		public void SubtractMatrix(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
-				throw new ArgumentException("Subtraction cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Subtraction cannot be performed, provided matrices don't match the rule of size matching");
 			}
-			for (var i = 0; i < _data.Length; _data[i] -= (other._data[i]), ++i) { }
+
+			for (var i = 0; i < _data.Length; ++i)
+			{
+				_data[i] -= (other._data[i]);
+			}
 		}
 
-		public void AddMatrix(ref FlatMatrix other)
+		public void AddMatrix(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
-				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
-			for (var i = 0; i < _data.Length; _data[i] += (other._data[i]), ++i) { }
+
+			for (var i = 0; i < _data.Length; ++i)
+			{
+				_data[i] += (other._data[i]);
+			}
 		}
 
 		public static FlatMatrix operator +(FlatMatrix first, FlatMatrix other)
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
 			{
-				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
 			var dst = new FlatMatrix(first);
-			for (var i = 0; i < first._data.Length; dst._data[i] += other._data[i], ++i) { }
+			for (var i = 0; i < first._data.Length; ++i)
+			{
+				dst._data[i] += other._data[i];
+			}
+
+			return dst;
+		}
+
+		public static FlatMatrix AddMatrix(FlatMatrix first, FlatMatrix other)
+		{
+			if (first.Cols != other.Cols || first.Rows != other.Rows)
+			{
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
+			}
+
+			var dst = new FlatMatrix(first);
+			for (var i = 0; i < first._data.Length; ++i)
+			{
+				dst._data[i] += other._data[i];
+			}
+
 			return dst;
 		}
 
@@ -150,11 +231,16 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
 			{
-				throw new ArgumentException("Subtraction cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Subtraction cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
 			var dst = new FlatMatrix(first);
-			for (var i = 0; i < first._data.Length; dst._data[i] -= other._data[i], ++i) { }
+			for (var i = 0; i < first._data.Length; ++i)
+			{
+				dst._data[i] -= other._data[i];
+			}
+
 			return dst;
 		}
 
@@ -162,7 +248,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (first.Cols != other.Rows)
 			{
-				throw new ArgumentException($"Multiplication cannot be performed, provided matrices don't match the rule of size left.Cols = {first.Cols} != right.Rows = {other.Rows} ");
+				throw new ArgumentException(
+					$"Multiplication cannot be performed, provided matrices don't match the rule of size left.Cols = {first.Cols} != right.Rows = {other.Rows} ");
 			}
 
 			var dst = new FlatMatrix(first.Rows, other.Cols);
@@ -179,14 +266,16 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 					dst._data[i * dst.Cols + j] = res;
 				}
 			}
+
 			return dst;
 		}
 
-		public static FlatMatrix TwoLoopMultiply(ref FlatMatrix first, ref FlatMatrix other)
+		public static FlatMatrix Multiply(FlatMatrix first, FlatMatrix other)
 		{
 			if (first.Cols != other.Rows)
 			{
-				throw new ArgumentException($"Multiplication cannot be performed, provided matrices don't match the rule of size left.Cols = {first.Cols} != right.Rows = {other.Rows} ");
+				throw new ArgumentException(
+					$"Multiplication cannot be performed, provided matrices don't match the rule of size left.Cols = {first.Cols} != right.Rows = {other.Rows} ");
 			}
 
 			var dst = new FlatMatrix(first.Rows, other.Cols);
@@ -201,8 +290,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				}
 
 				dst._data[i * other.Cols + j] = res;
-
 			}
+
 			return dst;
 		}
 
@@ -217,11 +306,12 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			return mat;
 		}
 
-		public FlatMatrix HadamardProduct(ref FlatMatrix other)
+		public FlatMatrix HadamardProduct(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
-				throw new ArgumentException($"Hadamard product cannot be computed: ({Rows}, {Cols}) != ({other.Rows}, {other.Cols})");
+				throw new ArgumentException(
+					$"Hadamard product cannot be computed: ({Rows}, {Cols}) != ({other.Rows}, {other.Cols})");
 			}
 
 			var mat = new FlatMatrix(Rows, Cols);
@@ -232,6 +322,19 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			return mat;
+		}
+
+		public void Shuffle()
+		{
+			_data.Shuffle();
+		}
+
+		public double Min() => _data.Min();
+		public double Max() => _data.Max();
+
+		public void Dispose()
+		{
+			GC.SuppressFinalize(this);
 		}
 	}
 }

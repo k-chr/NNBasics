@@ -1,16 +1,15 @@
 ﻿#undef Verbose
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using NNBasicsUtilities.ActivationFunctions;
-using NNBasicsUtilities.Core.Layers;
+using NNBasicsUtilities.Core.FlatCore.FlatLayers;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
-namespace NNBasicsUtilities.Core
+namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 {
-	//TODO Implement Neural network behaviour and add Layers members and backward propagation with activation functions
 	public class NeuralNetwork
 	{
 		private readonly List<HiddenLayer> _hiddenLayers;
@@ -39,7 +38,7 @@ namespace NNBasicsUtilities.Core
 		{
 			public sealed class HiddenLayerBuilder
 			{
-				private readonly Matrix _layerNeurons;
+				private readonly FlatMatrix _layerNeurons;
 				private Func<double, double> _fx;
 				private Func<double, double> _dfx;
 				private readonly NeuralNetworkBuilder _parentBuilder;
@@ -47,7 +46,7 @@ namespace NNBasicsUtilities.Core
 				private readonly double _defaultDropoutRate = 0.5;
 				private double _dropoutRate;
 
-				internal HiddenLayerBuilder(NeuralNetworkBuilder parentBuilder, Matrix layerNeurons)
+				internal HiddenLayerBuilder(NeuralNetworkBuilder parentBuilder, FlatMatrix layerNeurons)
 				{
 					_layerNeurons = layerNeurons;
 					_parentBuilder = parentBuilder;
@@ -105,7 +104,7 @@ namespace NNBasicsUtilities.Core
 			internal PredictLayer PredictionLayer { get; set; }
 			internal string Name { get; private set; }
 
-			private Matrix _predictionLayerNeurons;
+			private FlatMatrix _predictionLayerNeurons;
 
 			public NeuralNetworkBuilder UseSoftmax()
 			{
@@ -137,13 +136,13 @@ namespace NNBasicsUtilities.Core
 				return new HiddenLayerBuilder(this, mat);
 			}
 
-			public NeuralNetworkBuilder AttachPredictionLayer(Matrix ons)
+			public NeuralNetworkBuilder AttachPredictionLayer(FlatMatrix ons)
 			{
 				_predictionLayerNeurons = ons;
 				return this;
 			}
 
-			public HiddenLayerBuilder AddHiddenLayer(Matrix layerNeurons)
+			public HiddenLayerBuilder AddHiddenLayer(FlatMatrix layerNeurons)
 			{
 				return new HiddenLayerBuilder(this, layerNeurons);
 			}
@@ -155,11 +154,12 @@ namespace NNBasicsUtilities.Core
 			}
 		}
 
-		public (Matrix, Matrix, double) Train(Matrix expected, Matrix dataSeries, int iterations, int period = 1)
+		public (FlatMatrix, FlatMatrix, double) Train(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
+			int period = 1)
 		{
-			var ans = new Matrix();
+			var ans = new FlatMatrix();
 			var endError = 0.0;
-			var endErrors = new Matrix(Tuple.Create(1, _predictLayer.Weights.Count));
+			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 
 			var logger = Logger.Instance.StartSession(true, _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
@@ -168,13 +168,13 @@ namespace NNBasicsUtilities.Core
 
 			for (var i = 0; i < iterations; ++i, ++_currentIteration)
 			{
-				var errors = new Matrix(Tuple.Create(1, expected[0].Count));
+				var errors = FlatMatrix.Of(1, expected.Cols);
 				var error = 0.0;
 				var accuracy = 0;
 				for (var index = 0; index < dataSeries.Rows; ++index)
 				{
-					var rowInput = dataSeries[index].ToMatrix();
-					var expectedOutput = expected[index].ToMatrix();
+					var rowInput = dataSeries[index];
+					var expectedOutput = expected[index];
 
 					#region Propagation
 
@@ -195,20 +195,20 @@ namespace NNBasicsUtilities.Core
 
 					#region GetDeltasOnPredictionLayer
 
-					var fAnswer = _predictLayer.GetDeltas(expectedOutput);
+					var (fAnswer, ons) =  _predictLayer.GetDeltas(expectedOutput);
 
 					#endregion
 
 					#region ErrorCummulation
 
-					var seriesError = fAnswer.Item1[0].Sum(d => d * d);
-					var seriesErrors = fAnswer.Item1.HadamardProduct(fAnswer.Item1);
+					var seriesError = fAnswer[(Index)0].Sum(d => d * d);
+					var seriesErrors = fAnswer.HadamardProduct(fAnswer);
 					error += seriesError;
 					errors.AddMatrix(seriesErrors);
 
-					if (fAnswer.Item1.Cols > 1)
+					if (fAnswer.Cols > 1)
 					{
-						accuracy += ans[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
+						accuracy += ans[(Index)0].ArgMax() == expectedOutput[(Index)0].ArgMax() ? 1 : 0;
 					}
 
 #if Verbose
@@ -223,7 +223,7 @@ namespace NNBasicsUtilities.Core
 
 					foreach (var hiddenLayer in _hiddenLayers)
 					{
-						fAnswer = hiddenLayer.BackPropagate(fAnswer.Item1, fAnswer.Item2);
+						(fAnswer, ons) = hiddenLayer.BackPropagate( fAnswer, ons);
 					}
 
 					//time = Stopwatch.GetTimestamp() - time;
@@ -268,7 +268,7 @@ namespace NNBasicsUtilities.Core
 			return (ans, endErrors, endError);
 		}
 
-		public (Matrix, Matrix, double) Test(Matrix expected, Matrix dataSeries)
+		public (FlatMatrix, FlatMatrix, double) Test(FlatMatrix expected, FlatMatrix dataSeries)
 		{
 			if (!_isLearned)
 			{
@@ -279,15 +279,15 @@ namespace NNBasicsUtilities.Core
 			var logger = Logger.Instance.StartSession(name: _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
-			var ans = new Matrix();
+			var ans = FlatMatrix.Of(0,0);
 			var endError = 0.0;
-			var endErrors = new Matrix(Tuple.Create(1, _predictLayer.Weights.Count));
+			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 			var accuracy = 0;
 
 			for (var index = 0; index < dataSeries.Rows; ++index)
 			{
-				var rowInput = dataSeries[index].ToMatrix();
-				var expectedOutput = expected[index].ToMatrix();
+				var rowInput = dataSeries[index];
+				var expectedOutput = expected[index];
 
 				#region Propagation
 
@@ -303,23 +303,23 @@ namespace NNBasicsUtilities.Core
 
 				#region GetDeltasOnPredictionLayer
 
-				var fAnswer = _predictLayer.GetDeltas(expectedOutput);
+				var (flatMatrix, _) = _predictLayer.GetDeltas(expectedOutput);
 
 				#endregion
 
 				#region ErrorCummulation
 
-				var seriesError = fAnswer.Item1[0].Sum(d => d * d);
-				var seriesErrors = fAnswer.Item1.HadamardProduct(fAnswer.Item1);
+				var seriesError = flatMatrix[(Index)0].Sum(d => d * d);
+				var seriesErrors = flatMatrix.HadamardProduct(flatMatrix);
 				endError += seriesError;
 				endErrors.AddMatrix(seriesErrors);
 
-				if (fAnswer.Item1.Cols > 1)
+				if (flatMatrix.Cols > 1)
 				{
-					accuracy += ans[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
+					accuracy += ans[(Index)0].ArgMax() == expectedOutput[(Index)0].ArgMax() ? 1 : 0;
 				}
 
-				logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput.ToMatrix());
+				logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput);
 
 				#endregion
 			}

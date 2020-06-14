@@ -2,51 +2,51 @@
 using System.Diagnostics;
 using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.Abstracts;
-using NNBasicsUtilities.Core.Models;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Core.Layers
 {
-   public class PredictLayer : Layer
-   {
-      private readonly bool _useSoftmax;
+	public class PredictLayer : Layer
+	{
+		private readonly bool _useSoftmax;
 
-      public PredictLayer(Matrix ons, bool useSoftmax = false) : base(ons)
-      {
-         _useSoftmax = useSoftmax;
-      }
+		public PredictLayer(Matrix ons, bool useSoftmax = false) : base(ons)
+		{
+			_useSoftmax = useSoftmax;
+		}
 
-      public FeedbackAnswer GetDeltas(EngineAnswer expectedAnswer)
-      {
-         var thisLayerResponse = LatestAnswer;
-         var deltas = thisLayerResponse.Data - expectedAnswer.Data;
-         var ans = new EngineAnswer() { Data = deltas };
-         LatestDeltas = ans;
-         return new FeedbackAnswer(){Deltas = ans, Ons = Ons};
-      }
+		public (Matrix, Matrix) GetDeltas(Matrix expectedAnswer)
+		{
+			var thisLayerResponse = LatestAnswer;
+			var deltas = thisLayerResponse - expectedAnswer;
+			var ans = deltas;
+			LatestDeltas = ans;
+			return (ans, Ons);
+		}
 
-      public void Update()
-      {
-         UpdateWeights(new GdEngineAnswer(LatestAnswer, LatestDeltas));
-      }
+		public void Update()
+		{
+			UpdateWeights(LatestDeltas);
+		}
 
-      public new EngineAnswer Proceed(Matrix input)
-      {
-	      //var time = Stopwatch.GetTimestamp();
+		public new Matrix Proceed(Matrix input)
+		{
+			//var time = Stopwatch.GetTimestamp();
 
-         var ans = base.Proceed(input);
-         if (_useSoftmax)
-         {
-            ans.Data = ans.Data.Softmax();
-         }
-         //time = Stopwatch.GetTimestamp() - time;
-         //Console.WriteLine($"Proceed time in predict layer: {time}");
-         return ans;
-      }
+			var ans = base.Proceed(input);
+			if (_useSoftmax)
+			{
+				ans = ans.Softmax();
+			}
 
-      public override string ToString()
-      {
-	      return Ons.ToString();
-      }
-   }
+			//time = Stopwatch.GetTimestamp() - time;
+			//Console.WriteLine($"Proceed time in predict layer: {time}");
+			return ans;
+		}
+
+		public override string ToString()
+		{
+			return Ons.ToString();
+		}
+	}
 }

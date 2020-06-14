@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using NNBasicsUtilities.Core.Abstracts;
+using NNBasicsUtilities.Core.FlatCore.FlatAbstracts;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
-namespace NNBasicsUtilities.Core.Layers
+namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 {
 	public class HiddenLayer : Layer
 	{
@@ -17,9 +17,9 @@ namespace NNBasicsUtilities.Core.Layers
 		private readonly ActivationFunctionDerivative _activationFunctionDerivative;
 		private readonly double _dropoutRate;
 		private readonly bool _applyDropout;
-		private readonly List<double> _dropout;
+		private FlatMatrix _dropout;
 
-		public HiddenLayer(Matrix ons, Func<double, double> fx = null, Func<double, double> dfx = null,
+		public HiddenLayer(FlatMatrix ons, Func<double, double> fx = null, Func<double, double> dfx = null,
 			bool dropout = false, double dropoutRate = 0) : base(ons)
 		{
 			_activationFunctionDerivative += d => dfx?.Invoke(d) ?? 1;
@@ -37,7 +37,7 @@ namespace NNBasicsUtilities.Core.Layers
 			}
 		}
 
-		private List<double> GenerateDropout()
+		private FlatMatrix GenerateDropout()
 		{
 			var l = new List<double>();
 			var count = Ons.Cols;
@@ -49,11 +49,12 @@ namespace NNBasicsUtilities.Core.Layers
 			}
 
 			l.Shuffle();
-
-			return l;
+			var mat = FlatMatrix.Of(1, l.Count);
+			mat[(Index) 0] = l.ToArray();
+			return mat;
 		}
 
-		public (Matrix, Matrix) BackPropagate(Matrix deltas, Matrix ons)
+		public (FlatMatrix, FlatMatrix) BackPropagate(FlatMatrix deltas, FlatMatrix ons)
 		{
 			var thisLayerResponse = LatestAnswer;
 			var matrix = deltas * ons;
@@ -63,21 +64,21 @@ namespace NNBasicsUtilities.Core.Layers
 
 			if (_applyDropout)
 			{
-				var mat = data.HadamardProduct(_dropout.ToMatrix());
+				var mat = data.HadamardProduct(_dropout);
 				data = mat;
 			}
 
 			var ans = data;
 			LatestDeltas = ans;
 			return (ans, Ons);
-		}
+	  }
 
 		public void Update()
 		{
 			UpdateWeights(LatestDeltas);
 		}
 
-		public new Matrix Proceed(Matrix ins)
+		public new FlatMatrix Proceed(FlatMatrix ins)
 		{
 			//var time = Stopwatch.GetTimestamp();
 			//var subTime = time;
@@ -99,7 +100,7 @@ namespace NNBasicsUtilities.Core.Layers
 					_dropout.Shuffle();
 				}
 
-				mat = mat.HadamardProduct(_dropout.ToMatrix());
+				mat = mat.HadamardProduct(_dropout);
 
 				ans = mat;
 			}

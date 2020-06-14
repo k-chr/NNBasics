@@ -7,308 +7,496 @@ using NNBasicsUtilities.Core.Layers;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-   public class Logger
-   {
-      public static Logger Instance => _instance ??= new Logger();
+	public class Logger
+	{
+		public static Logger Instance => _instance ??= new Logger();
 
-      private Logger()
-      {
-      }
+		private Logger()
+		{
+		}
 
-      private string PredictionLayerRangeTag(PredictLayer layer) => $"[Prediction layer initial weight range]<{layer.Weights.Min(list => list.Min())}; {layer.Weights.Max(list => list.Max())}>\n";
-      private string AccuracyTag(double accuracy, double seriesCount) => $"Correct: {accuracy} of {seriesCount} ({(accuracy/(double)seriesCount) * 100}%)\n";
-      private string AlphaTag(double alpha) => $"[Alpha]\n{alpha}\n";
-      private string CumulativeErrorTag(double error) => $"[Cumulative error]\n{error}\n";
-      private string ErrorsTag(Matrix errors) => $"[Error of each neuron]\n{errors}";
-      private string IterationTag(int index) => $"[After Iteration No. {index}]\n";
-      private string SeriesTag(int index) => $"[Series No. {index}]\n";
-      private string ExpectedTag(Matrix expected) => $"[Expected]\n{expected}";
-      private string ResultTag(Matrix ans) => $"[Result]\n{ans}";
-      private string HiddenLayersCountTag(int count) => $"[Count of hidden layers]\n{count}\n";
-      private string HiddenLayerTag(HiddenLayer layer) => $"[Hidden layer weights]\n{layer}";
-      private string PredictLayerTag(PredictLayer layer) => $"[Prediction layer weights]\n{layer}";
-      private string Start => _isLearning ? $"[Start of training the \"{_name}\" network]\n\n" : $"[Start of testing the \"{_name}\" network]\n\n";
-      private string CurrentDate => $"\n[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}]\n";
-      private string End => $"[End of logging for \"{_name}\" network]";
-      private string TestResult => "[Test results]\n";
-      private string Preconditions => "[Preconditions]\n";
+		private string PredictionLayerRangeTag(PredictLayer layer) =>
+			$"[Prediction layer initial weight range]<{layer.Weights.Min(list => list.Min())}; {layer.Weights.Max(list => list.Max())}>\n";
 
-      private bool _isSessionOpened;
-      private bool _isLearning;
-      private bool _verbose;
-      private string _currentFile;
-      private StringBuilder _logBuilder;
+		private string AccuracyTag(double accuracy, double seriesCount) =>
+			$"Correct: {accuracy} of {seriesCount} ({(accuracy / seriesCount) * 100}%)\n";
 
-      private static Logger _instance;
-      private string _name;
+		private string AlphaTag(double alpha) => $"[Alpha]\n{alpha}\n";
+		private string CumulativeErrorTag(double error) => $"[Cumulative error]\n{error}\n";
+		private string ErrorsTag(Matrix errors) => $"[Error of each neuron]\n{errors}";
+		private string IterationTag(int index) => $"[After Iteration No. {index}]\n";
+		private string SeriesTag(int index) => $"[Series No. {index}]\n";
+		private string ExpectedTag(Matrix expected) => $"[Expected]\n{expected}";
+		private string ResultTag(Matrix ans) => $"[Result]\n{ans}";
+		private string HiddenLayersCountTag(int count) => $"[Count of hidden layers]\n{count}\n";
+		private string HiddenLayerTag(HiddenLayer layer) => $"[Hidden layer weights]\n{layer}";
+		private string PredictLayerTag(PredictLayer layer) => $"[Prediction layer weights]\n{layer}";
 
-      public Logger StartSession(bool isLearningSession = false, string name = null, bool verbose = false)
-      {
-         if (_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently created, dump data first before you start another one session!");
-         }
+		private string Start => _isLearning
+			? $"[Start of training the \"{_name}\" network]\n\n"
+			: $"[Start of testing the \"{_name}\" network]\n\n";
 
-         _verbose = verbose;
-         _logBuilder = new StringBuilder();
-         _isLearning = isLearningSession;
-         _isSessionOpened = true;
-         _name = name;
-         _currentFile =
-            $"log_{Guid.NewGuid().ToString().Substring(0, 5)}_{_name}_{DateTime.Now.ToShortDateString()}_{DateTime.Now.ToLongTimeString()}_{(isLearningSession ? "training" : "testing")}_session.log";
-         _currentFile = _currentFile.Replace(':', '_');
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+		private string CurrentDate => $"\n[{DateTime.Now.ToShortDateString()} | {DateTime.Now.ToLongTimeString()}]\n";
+		private string End => $"[End of logging for \"{_name}\" network]";
+		private string TestResult => "[Test results]\n";
+		private string Preconditions => "[Preconditions]\n";
 
-         var date = CurrentDate;
+		private bool _isSessionOpened;
+		private bool _isLearning;
+		private bool _verbose;
+		private string _currentFile;
+		private StringBuilder _logBuilder;
 
-         writer.Write(date);
-         writer.Write(Start);
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
+		private static Logger _instance;
+		private string _name;
 
-         if (_verbose)
-         {
-            _logBuilder.Append(date).Append(Start); 
-         }
+		public Logger StartSession(bool isLearningSession = false, string name = null, bool verbose = false)
+		{
+			if (_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently created, dump data first before you start another one session!");
+			}
 
-         return this;
-      }
+			_verbose = verbose;
+			_logBuilder = new StringBuilder();
+			_isLearning = isLearningSession;
+			_isSessionOpened = true;
+			_name = name;
+			_currentFile =
+				$"log_{Guid.NewGuid().ToString().Substring(0, 5)}_{_name}_{DateTime.Now.ToShortDateString()}_{DateTime.Now.ToLongTimeString()}_{(isLearningSession ? "training" : "testing")}_session.log";
+			_currentFile = _currentFile.Replace(':', '_');
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
 
-      public Logger LogLayerInfo(PredictLayer layer, List<HiddenLayer> hiddenLayers)
-      {
-         if (!_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently closed, open session first!");
-         }
+			var date = CurrentDate;
 
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+			writer.Write(date);
+			writer.Write(Start);
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
 
-         var date = CurrentDate;
+			if (_verbose)
+			{
+				_logBuilder.Append(date).Append(Start);
+			}
 
-         writer.Write(date);
-         writer.Write(PredictLayerTag(layer));
+			return this;
+		}
 
-         foreach (var hiddenLayer in hiddenLayers)
-         {
-            writer.Write(HiddenLayerTag(hiddenLayer));
-         }
+		public Logger LogLayerInfo(PredictLayer layer, List<HiddenLayer> hiddenLayers)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
 
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
 
-         if (_verbose)
-         {
-            _logBuilder.Append(date)
-         .Append(PredictLayerTag(layer)); 
-         }
+			var date = CurrentDate;
 
-         foreach (var hiddenLayer in hiddenLayers)
-         {
-            _logBuilder.Append(HiddenLayerTag(hiddenLayer));
-         }
+			writer.Write(date);
+			writer.Write(PredictLayerTag(layer));
 
-         return this;
-      }
+			foreach (var hiddenLayer in hiddenLayers)
+			{
+				writer.Write(HiddenLayerTag(hiddenLayer));
+			}
 
-      public Logger LogTestFinalResults(PredictLayer layer, Matrix testErrors, double testError, int accuracy = 0, int seriesCount = 0)
-      {
-         if (!_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently closed, open session first!");
-         }
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
 
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(PredictLayerTag(layer));
+			}
 
-         var date = CurrentDate;
+			foreach (var hiddenLayer in hiddenLayers)
+			{
+				_logBuilder.Append(HiddenLayerTag(hiddenLayer));
+			}
 
-         writer.Write(date);
-         writer.Write(TestResult);
-         writer.Write(_verbose ? PredictLayerTag(layer) : PredictionLayerRangeTag(layer));
-         writer.Write(ErrorsTag(testErrors));
-         writer.Write(CumulativeErrorTag(testError));
+			return this;
+		}
 
-         if (seriesCount > 0)
-         {
-            writer.Write(AccuracyTag(accuracy, seriesCount));
-         }
-         
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
+		public Logger LogTestFinalResults(PredictLayer layer, Matrix testErrors, double testError, int accuracy = 0,
+			int seriesCount = 0)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
 
-         if (_verbose)
-         {
-            _logBuilder.Append(date)
-               .Append(TestResult)
-               .Append(PredictLayerTag(layer))
-               .Append(ErrorsTag(testErrors))
-               .Append(CumulativeErrorTag(testError));
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
 
-            if (seriesCount > 0)
-            {
-               _logBuilder.Append(AccuracyTag(accuracy, seriesCount));
-            }
-         }
+			var date = CurrentDate;
 
-         return this;
-      }
+			writer.Write(date);
+			writer.Write(TestResult);
+			writer.Write(_verbose ? PredictLayerTag(layer) : PredictionLayerRangeTag(layer));
+			writer.Write(ErrorsTag(testErrors));
+			writer.Write(CumulativeErrorTag(testError));
 
-      public Logger LogPreconditions(int hiddenCount, double alpha, PredictLayer predictionLayer)
-      {
-         if (!_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently closed, open session first!");
-         }
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(accuracy, seriesCount));
+			}
 
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
 
-         var date = CurrentDate;
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(TestResult)
+				   .Append(PredictLayerTag(layer))
+				   .Append(ErrorsTag(testErrors))
+				   .Append(CumulativeErrorTag(testError));
 
-         writer.Write(date);
-         writer.Write(Preconditions);
-         writer.Write(_verbose ? PredictLayerTag(predictionLayer) : PredictionLayerRangeTag(predictionLayer));
-         writer.Write(HiddenLayersCountTag(hiddenCount));
-         writer.Write(AlphaTag(alpha));
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
-         
-         if (_verbose)
-         {
-            _logBuilder.Append(date)
-               .Append(Preconditions)
-               .Append(PredictLayerTag(predictionLayer))
-               .Append(HiddenLayersCountTag(hiddenCount))
-               .Append(AlphaTag(alpha));
-         }
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+				}
+			}
 
-         return this;
-      }
+			return this;
+		}
 
-      public Logger LogIteration(int iterationIdx, PredictLayer layer, Matrix iterationErrors,
-         double iterationError, int accuracy = 0, int seriesCount = 0)
-      {
-         if (!_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently closed, open session first!");
-         }
+		public Logger LogPreconditions(int hiddenCount, double alpha, PredictLayer predictionLayer)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
 
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
 
-         var date = CurrentDate;
+			var date = CurrentDate;
 
-         writer.Write(date);
-         writer.Write(IterationTag(iterationIdx));
-         writer.Write(_verbose ? PredictLayerTag(layer) : PredictionLayerRangeTag(layer));
-         writer.Write(ErrorsTag(iterationErrors));
-         writer.Write(CumulativeErrorTag(iterationError));
+			writer.Write(date);
+			writer.Write(Preconditions);
+			writer.Write(_verbose ? PredictLayerTag(predictionLayer) : PredictionLayerRangeTag(predictionLayer));
+			writer.Write(HiddenLayersCountTag(hiddenCount));
+			writer.Write(AlphaTag(alpha));
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
 
-         if (seriesCount > 0)
-         {
-            writer.Write(AccuracyTag(accuracy, seriesCount));
-         }
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(Preconditions)
+				   .Append(PredictLayerTag(predictionLayer))
+				   .Append(HiddenLayersCountTag(hiddenCount))
+				   .Append(AlphaTag(alpha));
+			}
 
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
+			return this;
+		}
 
-         if (_verbose)
-         {
-            _logBuilder.Append(date)
-               .Append(IterationTag(iterationIdx))
-               .Append(PredictLayerTag(layer))
-               .Append(ErrorsTag(iterationErrors))
-               .Append(CumulativeErrorTag(iterationError));
+		public Logger LogIteration(int iterationIdx, PredictLayer layer, Matrix iterationErrors,
+			double iterationError, int accuracy = 0, int seriesCount = 0)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
 
-            if (seriesCount > 0)
-            {
-               _logBuilder.Append(AccuracyTag(accuracy, seriesCount));
-            } 
-         }
-         return this;
-      }
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
 
-      public Logger LogSeriesError(Matrix seriesErrors, Matrix ans, double seriesError, int seriesIdx, Matrix expected)
-      {
-         if (!_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently closed, open session first!");
-         }
+			var date = CurrentDate;
 
-         if (!_verbose) return this;
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+			writer.Write(date);
+			writer.Write(IterationTag(iterationIdx));
+			writer.Write(_verbose ? PredictLayerTag(layer) : PredictionLayerRangeTag(layer));
+			writer.Write(ErrorsTag(iterationErrors));
+			writer.Write(CumulativeErrorTag(iterationError));
 
-         var date = CurrentDate;
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(accuracy, seriesCount));
+			}
 
-         writer.Write(date);
-         writer.Write(SeriesTag(seriesIdx));
-         writer.Write(ResultTag(ans));
-         writer.Write(ExpectedTag(expected));
-         writer.Write(ErrorsTag(seriesErrors));
-         writer.Write(CumulativeErrorTag(seriesError));
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
 
-         _logBuilder.Append(date)
-            .Append(SeriesTag(seriesIdx))
-            .Append(ResultTag(ans))
-            .Append(ExpectedTag(expected))
-            .Append(ErrorsTag(seriesErrors))
-            .Append(CumulativeErrorTag(seriesError));
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(IterationTag(iterationIdx))
+				   .Append(PredictLayerTag(layer))
+				   .Append(ErrorsTag(iterationErrors))
+				   .Append(CumulativeErrorTag(iterationError));
 
-         return this;
-      }
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+				}
+			}
 
-      public override string ToString()
-      {
-         _logBuilder.Append(CurrentDate)
-            .Append(End);
-         return _logBuilder.ToString();
-      }
+			return this;
+		}
 
-      public void EndSession()
-      {
-         if (!_isSessionOpened)
-         {
-            throw new AccessViolationException(
-               "Session of logging is currently closed, open session first!");
-         }
+		public Logger LogSeriesError(Matrix seriesErrors, Matrix ans, double seriesError, int seriesIdx,
+			Matrix expected)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
 
-         _isSessionOpened = false;
-         _isLearning = false;
+			if (!_verbose) return this;
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
 
-         using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
-         using var stream = new MemoryStream();
-         using var writer = new StreamWriter(stream);
+			var date = CurrentDate;
 
-         writer.Write(CurrentDate);
-         writer.Write(End);
-         writer.Flush();
-         stream.Seek(0, SeekOrigin.Begin);
-         stream.WriteTo(file);
+			writer.Write(date);
+			writer.Write(SeriesTag(seriesIdx));
+			writer.Write(ResultTag(ans));
+			writer.Write(ExpectedTag(expected));
+			writer.Write(ErrorsTag(seriesErrors));
+			writer.Write(CumulativeErrorTag(seriesError));
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
 
-         _currentFile = "";
-      }
-   }
+			_logBuilder.Append(date)
+			   .Append(SeriesTag(seriesIdx))
+			   .Append(ResultTag(ans))
+			   .Append(ExpectedTag(expected))
+			   .Append(ErrorsTag(seriesErrors))
+			   .Append(CumulativeErrorTag(seriesError));
+
+			return this;
+		}
+
+		public override string ToString()
+		{
+			_logBuilder.Append(CurrentDate)
+			   .Append(End);
+			return _logBuilder.ToString();
+		}
+
+		public void EndSession()
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			_isSessionOpened = false;
+			_isLearning = false;
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			writer.Write(CurrentDate);
+			writer.Write(End);
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			_currentFile = "";
+		}
+
+		public void LogTestFinalResults(FlatCore.FlatLayers.PredictLayer predictLayer, FlatMatrix testErrors,
+			in double testError, in int accuracy = 0,
+			int seriesCount = 0)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(TestResult);
+			writer.Write(_verbose ? PredictLayerTag(predictLayer) : PredictionLayerRangeTag(predictLayer));
+			writer.Write(ErrorsTag(testErrors));
+			writer.Write(CumulativeErrorTag(testError));
+
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(accuracy, seriesCount));
+			}
+
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(TestResult)
+				   .Append(PredictLayerTag(predictLayer))
+				   .Append(ErrorsTag(testErrors))
+				   .Append(CumulativeErrorTag(testError));
+
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+				}
+			}
+		}
+
+		private string PredictLayerTag(FlatCore.FlatLayers.PredictLayer predictLayer) =>
+			$"[Prediction layer weights]\n{predictLayer}";
+
+		private string PredictionLayerRangeTag(FlatCore.FlatLayers.PredictLayer predictLayer) =>
+			$"[Prediction layer initial weight range]<{predictLayer.Weights.Min()}; {predictLayer.Weights.Max()}>\n";
+
+		private string ErrorsTag(FlatMatrix testErrors) => $"[Error of each neuron]\n{testErrors}";
+
+		public Logger LogSeriesError(FlatMatrix seriesErrors, FlatMatrix ans, in double seriesError, in int seriesIdx,
+			FlatMatrix expectedOutput)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			if (!_verbose) return this;
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(SeriesTag(seriesIdx));
+			writer.Write(ResultTag(ans));
+			writer.Write(ExpectedTag(expectedOutput));
+			writer.Write(ErrorsTag(seriesErrors));
+			writer.Write(CumulativeErrorTag(seriesError));
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			_logBuilder.Append(date)
+			   .Append(SeriesTag(seriesIdx))
+			   .Append(ResultTag(ans))
+			   .Append(ExpectedTag(expectedOutput))
+			   .Append(ErrorsTag(seriesErrors))
+			   .Append(CumulativeErrorTag(seriesError));
+
+			return this;
+		}
+
+		private string ExpectedTag(FlatMatrix expectedOutput) => $"[Expected]\n{expectedOutput}";
+
+		private string ResultTag(FlatMatrix ans) => $"[Result]\n{ans}";
+
+		public Logger LogPreconditions(in int hiddenLayersCount, in double predictLayerAlpha,
+			FlatCore.FlatLayers.PredictLayer predictionLayer)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(Preconditions);
+			writer.Write(_verbose ? PredictLayerTag(predictionLayer) : PredictionLayerRangeTag(predictionLayer));
+			writer.Write(HiddenLayersCountTag(hiddenLayersCount));
+			writer.Write(AlphaTag(predictLayerAlpha));
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(Preconditions)
+				   .Append(PredictLayerTag(predictionLayer))
+				   .Append(HiddenLayersCountTag(hiddenLayersCount))
+				   .Append(AlphaTag(predictLayerAlpha));
+			}
+
+			return this;
+	  }
+
+		public Logger LogIteration(int currentIteration, FlatCore.FlatLayers.PredictLayer predictLayer,
+			FlatMatrix iterationErrors, in double iterationError, in int accuracy, int seriesCount = 0)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(IterationTag(currentIteration));
+			writer.Write(_verbose ? PredictLayerTag(predictLayer) : PredictionLayerRangeTag(predictLayer));
+			writer.Write(ErrorsTag(iterationErrors));
+			writer.Write(CumulativeErrorTag(iterationError));
+
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(accuracy, seriesCount));
+			}
+
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(IterationTag(currentIteration))
+				   .Append(PredictLayerTag(predictLayer))
+				   .Append(ErrorsTag(iterationErrors))
+				   .Append(CumulativeErrorTag(iterationError));
+
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(accuracy, seriesCount));
+				}
+			}
+
+			return this;
+	  }
+	}
 }

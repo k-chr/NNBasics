@@ -10,7 +10,7 @@ using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public class Matrix : IDisposable,  IEnumerable<double[]>
+	public class Matrix : IDisposable, IEnumerable<double[]>
 	{
 		public int Rows { get; }
 
@@ -28,7 +28,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			get => new ReadOnlyCollection<double>(_data[x]);
 			set
 			{
-				if (value.Count != Cols) throw new ArgumentException($"Invalid size of collection, expected {Cols} but got {value.Count}");
+				if (value.Count != Cols)
+					throw new ArgumentException($"Invalid size of collection, expected {Cols} but got {value.Count}");
 				_data[x] = value.ToArray();
 			}
 		}
@@ -77,7 +78,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			var cols = values[0].Count;
 			if (values.Any(row => row.Count != cols))
 			{
-				throw new ArgumentException("Provided list of list of doubles isn't a good candidate to converse it into matrix");
+				throw new ArgumentException(
+					"Provided list of list of doubles isn't a good candidate to converse it into matrix");
 			}
 
 			Cols = cols;
@@ -88,7 +90,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			CreateRows();
 
 			SetValues(values);
-
 		}
 
 		private void SetValues(IReadOnlyList<List<double>> values)
@@ -155,9 +156,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public Matrix this[Range rangeRows, Range rangeCols]
 		{
-			get => new Matrix(Range(rangeCols.End.Value, rangeRows.End.Value, rangeCols.Start.Value, rangeRows.Start.Value));
+			get => new Matrix(Range(rangeCols.End.Value, rangeRows.End.Value, rangeCols.Start.Value,
+				rangeRows.Start.Value));
 			set => _data.SetBlock(value._data, rangeRows, rangeCols);
-
 		}
 
 		public double[][] Range(int cols, int rows, int colsOffset, int rowsOffset)
@@ -168,8 +169,9 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				var d = doubles[i];
 				doubles[i] = d[colsOffset..cols];
 			}
+
 			return doubles;
-		} 
+		}
 
 		public Matrix Transpose()
 		{
@@ -184,7 +186,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 
 			//var mat = this.SelectMany(inner => inner.Select((item, index) => new { item, index }))
-				//.GroupBy(i => i.index, i => i.item).ToMatrix();
+			//.GroupBy(i => i.index, i => i.item).ToMatrix();
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Transpose time: {time}");
 			return mat;
@@ -194,7 +196,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
-				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
 			var (rows, cols) = (Rows, Cols);
@@ -212,9 +215,10 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
 			{
-				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
-			
+
 			var (rows, cols) = (Rows, Cols);
 
 			for (var i = 0; i < rows; ++i)
@@ -230,7 +234,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
 			{
-				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
 			var (rows, cols) = (first.Rows, first.Cols);
@@ -251,7 +256,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (first.Cols != other.Cols || first.Rows != other.Rows)
 			{
-				throw new ArgumentException("Addition cannot be performed, provided matrices don't match the rule of size matching");
+				throw new ArgumentException(
+					"Addition cannot be performed, provided matrices don't match the rule of size matching");
 			}
 
 			var (rows, cols) = (first.Rows, first.Cols);
@@ -272,7 +278,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (first.Cols != other.Rows)
 			{
-				throw new ArgumentException("Multiplication cannot be performed, provided matrices don't match the rule: A.cols == B.rows, where A, B are matrices, cols is count of columns and rows is count of rows");
+				throw new ArgumentException(
+					"Multiplication cannot be performed, provided matrices don't match the rule: A.cols == B.rows, where A, B are matrices, cols is count of columns and rows is count of rows");
 			}
 
 			var mat = new Matrix((first.Rows, other.Cols).ToTuple());
@@ -336,7 +343,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		{
 			if (this.Cols != other.Cols || this.Rows != other.Rows)
 			{
-				throw new ArgumentException($"Hadamard product cannot be computed: ({this.Rows}, {this.Cols}) != ({other.Rows}, {other.Cols})");
+				throw new ArgumentException(
+					$"Hadamard product cannot be computed: ({this.Rows}, {this.Cols}) != ({other.Rows}, {other.Cols})");
 			}
 
 			var (rows, cols) = (Rows, Cols);
@@ -355,7 +363,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public void Dispose()
 		{
-			GC.SuppressFinalize(this);
+			//GC.SuppressFinalize(this);
 		}
 
 		public static Matrix Copy(Matrix toCopy)
