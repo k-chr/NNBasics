@@ -11,6 +11,8 @@ using NNBasicsUtilities.Extensions;
 namespace NNBasicsUtilities.Core
 {
 	//TODO Implement Neural network behaviour and add Layers members and backward propagation with activation functions
+	//TODO rewrite dropout mask to be generate only once as matrix or vector dependent on problem to solve (each dropout vector has the same probability, but indices are randomized :V)
+	//TODO consider object pool, predict all sizes of matrices, and introduce fixed pointers.
 	public class NeuralNetwork
 	{
 		private readonly List<HiddenLayer> _hiddenLayers;
@@ -331,6 +333,15 @@ namespace NNBasicsUtilities.Core
 			logger.EndSession();
 
 			return (ans, endErrors, endError);
+		}
+
+		public (Matrix, Matrix, double) BatchTrain(Matrix expected, Matrix dataSeries, int iterations, int batchSize)
+		{
+			
+
+
+
+			throw new NotImplementedException();
 		}
 	}
 }
