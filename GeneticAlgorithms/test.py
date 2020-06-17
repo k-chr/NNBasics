@@ -18,5 +18,5 @@ print(arr)
 chromosome_inversion(arr)
 print(arr)
 l = [arr,arr1, arr2, arr3, arr4]
-for genome in roulette_wheel_selection(l, count_bits, 1):
+for genome in rank_selection(l, count_bits, 1):
     print(genome)

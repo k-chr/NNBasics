@@ -4,8 +4,8 @@ Created on Wed Jun 17 01:40:56 2020
 
 @author: Kamil Chrustowski
 """
+import heapq
 from numpy import *
-from collections import *
 from random import randint, uniform, random
 """
 It does the chromosome inversion of existing genom
@@ -54,8 +54,47 @@ def roulette_wheel_selection(population:list, fitness_function, n):
                 subpopulation.append(genome)
                 break
     return subpopulation
+
+def rank_selection(population: list, fitness_function, n):
+    fit_values = [(genome, fitness_function(genome)) for genome in population]
+    q = PriorityQueue()
+    for genom, value in fit_values:
+        q.push(genom, value) 
+    return [q.pop() for i in range(n)]
         
-                
+    
 def count_bits(genome: array):
     val = count_nonzero(genome)
     return val
+    
+class PriorityQueue:
+
+    def  __init__(self):
+        self.heap = []
+        self.count = 0
+
+    def push(self, item, priority):
+        entry = (priority, self.count, item)
+        heapq.heappush(self.heap, entry)
+        heapq._heapify_max(self.heap)
+        self.count += 1
+
+    def pop(self):
+        (_, _, item) = heapq._heappop_max(self.heap)
+        return item
+
+    def isEmpty(self):
+        return len(self.heap) == 0
+
+    def update(self, item, priority):
+
+        for index, (p, c, i) in enumerate(self.heap):
+            if i == item:
+                if p <= priority:
+                    break
+                del self.heap[index]
+                self.heap.append((priority, c, item))
+                heapq._heapify_max(self.heap)
+                break
+        else:
+            self.push(item, priority)
