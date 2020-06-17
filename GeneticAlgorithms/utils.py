@@ -6,7 +6,7 @@ Created on Wed Jun 17 01:40:56 2020
 """
 from numpy import *
 from collections import *
-from random import randint
+from random import randint, uniform, random
 """
 It does the chromosome inversion of existing genom
 """
@@ -39,11 +39,23 @@ def random_replacement(genome: array):
     i = randint(0, len(genome) - 1)
     genome[i] = 1 - genome[i]
     
-def roulette_wheel_selection(population:list, fitness_function):
-    wheel = defaultdict()
+def roulette_wheel_selection(population:list, fitness_function, n):
     fit_values = [(genome, fitness_function(genome)) for genome in population]
-    fit_sum = sum([values[1] for values in population])
-    
+    fit_sum = sum([values[1] for values in fit_values])
+    indices = set()
+    subpopulation = []
+    while len(indices) != n:
+        val = uniform(0, fit_sum)
+        curr = 0
+        for index, (genome, value) in enumerate(fit_values):
+            curr += value
+            if curr > val and index not in indices:
+                indices.add(index)
+                subpopulation.append(genome)
+                break
+    return subpopulation
+        
+                
 def count_bits(genome: array):
-    
-    return count_nonzero(genome)
+    val = count_nonzero(genome)
+    return val
