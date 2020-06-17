@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
 
@@ -15,6 +14,7 @@ namespace NNBasicsUtilities.ActivationFunctions
 			{
 				output[i] = Math.Exp(input[i]);
 			}
+
 			return output.Normalize();
 		}
 
@@ -37,16 +37,13 @@ namespace NNBasicsUtilities.ActivationFunctions
 			return mat;
 		}
 
-		public static FlatMatrix Softmax(this FlatMatrix flatMatrix)
+		public static void Softmax(this FlatMatrix m)
 		{
-			var mat = FlatMatrix.Of(flatMatrix.Rows, flatMatrix.Cols);
-			for (var i = 0; i < flatMatrix.Rows; ++i)
+			for (var i = 0; i < m.Rows; ++i)
 			{
-				var row = flatMatrix[(Index) i];
-				mat[(Index) i] = row.Softmax();
+				var row = m[i];
+				m[i] = row.Softmax();
 			}
-
-			return mat;
 		}
 	}
 }

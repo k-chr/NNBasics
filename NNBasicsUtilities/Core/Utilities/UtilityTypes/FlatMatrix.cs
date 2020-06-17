@@ -189,6 +189,27 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
+		public static void SubtractMatrix(FlatMatrix first, FlatMatrix other, FlatMatrix result)
+		{
+			if (first.Cols != other.Cols || first.Rows != other.Rows)
+			{
+				throw new ArgumentException(
+					"Subtraction cannot be performed, provided matrices don't match the rule of size matching");
+			}
+
+			var len = first._data.Length;
+			unsafe
+			{
+				fixed (double* arr1 = first._data, arr2 = other._data, res = result._data)
+				{
+					for (var i = 0; i < len; ++i)
+					{
+						*(res + i) = *(arr1 + i) - *(arr2 + i);
+					}
+				}
+			}
+		}
+
 		public void AddMatrix(FlatMatrix other)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
@@ -276,7 +297,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				}
 			}
 		}
-
+		
 		public void MultiplyByAlpha(double alpha)
 		{
 			var len = _data.Length;
