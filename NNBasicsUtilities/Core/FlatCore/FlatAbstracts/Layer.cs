@@ -12,8 +12,14 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 		protected readonly FlatMatrix LatestDeltas;
 		private readonly FlatMatrix _layerWeightDelta;
 		private double _alpha;
+		protected bool TestPending;
 
 		public FlatMatrix Weights => Ons;
+
+		public void SetTestSession(bool value)
+		{
+			TestPending = value;
+		}
 
 		public double Alpha
 		{

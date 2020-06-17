@@ -296,8 +296,13 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 			var seriesErrors = FlatMatrix.Of(1, expected.Cols);
 			var endError = 0.0;
-			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
+			var endErrors = FlatMatrix.Of(1, expected.Cols);
 			var accuracy = 0;
+
+			foreach (var hiddenLayer in _hiddenLayers)
+			{
+				hiddenLayer.SetTestSession(true);
+			}
 
 			for (var index = 0; index < dataSeries.Rows; ++index)
 			{

@@ -15,8 +15,8 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 		private readonly ActivationFunctionDerivative _activationFunctionDerivative;
 		private readonly double _dropoutRate;
 		private readonly bool _applyDropout;
-		protected FlatMatrix Dropout;
-		protected double[] DropoutVec;
+		private FlatMatrix _dropout;
+		private double[] _dropoutVec;
 
 		public HiddenLayer(FlatMatrix ons, int inputRows, Func<double, double> fx = null,
 			Func<double, double> dfx = null,
@@ -27,7 +27,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 			_activationFunction += d => fx?.Invoke(d) ?? d;
 
-			if (_applyDropout)
+			if (_applyDropout && !TestPending)
 			{
 				var len = ons.Cols;
 				var fill = (int) (len * dropoutRate);
@@ -39,15 +39,15 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		private void GenerateDropout()
 		{
-			Dropout = FlatMatrix.Of(Ins.Rows, Ons.Rows);
-			DropoutVec = new double[Ons.Rows];
+			_dropout = FlatMatrix.Of(Ins.Rows, Ons.Rows);
+			_dropoutVec = new double[Ons.Rows];
 
-			var count = Ons.Cols;
+			var count = Ons.Rows;
 			var fill = _dropoutRate * count;
 
 			for (var i = 0; i < count; ++i)
 			{
-				DropoutVec[i] = i < fill ? 1 : 0;
+				_dropoutVec[i] = i < fill ? 1 : 0;
 			}
 		}
 
@@ -55,8 +55,8 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 		{
 			for (var i = 0; i < Ins.Rows; ++i)
 			{
-				DropoutVec.Shuffle();
-				Dropout[i] = DropoutVec;
+				_dropoutVec.Shuffle();
+				_dropout[i] = _dropoutVec;
 			}
 		}
 
@@ -66,9 +66,9 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 			LatestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
 			LatestDeltas.HadamardProduct(LatestAnswer);
 
-			if (_applyDropout)
+			if (_applyDropout && !TestPending)
 			{
-				LatestDeltas.HadamardProduct(Dropout);
+				LatestDeltas.HadamardProduct(_dropout);
 			}
 
 			return (LatestDeltas, Ons);
@@ -90,11 +90,11 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 			LatestAnswer.ApplyFunction(d => _activationFunction(d));
 			//subTime = Stopwatch.GetTimestamp() - subTime;
 			//Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
-			if (_applyDropout)
+			if (_applyDropout && !TestPending)
 			{
 				ShuffleDropout();
 
-				LatestAnswer.HadamardProduct(Dropout);
+				LatestAnswer.HadamardProduct(_dropout);
 				LatestAnswer.MultiplyByAlpha(1 / _dropoutRate);
 			}
 
