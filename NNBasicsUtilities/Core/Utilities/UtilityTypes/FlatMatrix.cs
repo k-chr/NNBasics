@@ -5,7 +5,7 @@ using NNBasicsUtilities.Extensions;
 
 namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 {
-	public class FlatMatrix : IDisposable
+	public class FlatMatrix
 	{
 		private double[] _data;
 		public int Rows { get; private set; }
@@ -277,6 +277,21 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			}
 		}
 
+		public void MultiplyByAlpha(double alpha)
+		{
+			var len = _data.Length;
+			unsafe
+			{
+				fixed (double* arr1 = _data)
+				{
+					for (var n = 0; n < len; ++n)
+					{
+						*(arr1 + n) = *(arr1 + n) * alpha;
+					}
+				}
+			}
+		}
+
 		public void HadamardProduct(FlatMatrix other, FlatMatrix mat)
 		{
 			if (Cols != other.Cols || Rows != other.Rows)
@@ -342,10 +357,5 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public double Min() => _data.Min();
 		public double Max() => _data.Max();
-
-		public void Dispose()
-		{
-			GC.SuppressFinalize(this);
-		}
 	}
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using NNBasicsUtilities.Core.FlatCore.FlatAbstracts;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
@@ -17,11 +15,11 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 		private readonly ActivationFunctionDerivative _activationFunctionDerivative;
 		private readonly double _dropoutRate;
 		private readonly bool _applyDropout;
-		private FlatMatrix _dropout;
 		protected FlatMatrix Dropout;
 		protected double[] DropoutVec;
 
-	  public HiddenLayer(FlatMatrix ons, int inputRows, Func<double, double> fx = null, Func<double, double> dfx = null,
+		public HiddenLayer(FlatMatrix ons, int inputRows, Func<double, double> fx = null,
+			Func<double, double> dfx = null,
 			bool dropout = false, double dropoutRate = 0) : base(ons, inputRows)
 		{
 			_activationFunctionDerivative += d => dfx?.Invoke(d) ?? 1;
@@ -51,32 +49,30 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 			{
 				DropoutVec[i] = i < fill ? 1 : 0;
 			}
+		}
 
+		private void ShuffleDropout()
+		{
 			for (var i = 0; i < Ins.Rows; ++i)
 			{
-			   DropoutVec.Shuffle();
-			   Dropout[i] = DropoutVec;
+				DropoutVec.Shuffle();
+				Dropout[i] = DropoutVec;
 			}
 		}
 
 		public (FlatMatrix, FlatMatrix) BackPropagate(FlatMatrix deltas, FlatMatrix ons)
 		{
-			var thisLayerResponse = LatestAnswer;
-			var matrix = deltas * ons;
-			var data = matrix;
-			thisLayerResponse.ApplyFunction(d => _activationFunctionDerivative(d));
-			data = data.HadamardProduct(thisLayerResponse);
+			FlatMatrix.Multiply(deltas, ons, LatestDeltas);
+			LatestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
+			LatestDeltas.HadamardProduct(LatestAnswer);
 
 			if (_applyDropout)
 			{
-				var mat = data.HadamardProduct(_dropout);
-				data = mat;
+				LatestDeltas.HadamardProduct(Dropout);
 			}
 
-			var ans = data;
-			LatestDeltas = ans;
-			return (ans, Ons);
-	  }
+			return (LatestDeltas, Ons);
+		}
 
 		public void Update()
 		{
@@ -96,18 +92,10 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 			//Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
 			if (_applyDropout)
 			{
-				var mat = ans;
-				var r = new Random();
-				var bound = r.Next(10);
+				ShuffleDropout();
 
-				for (var j = 0; j < bound; ++j)
-				{
-					_dropout.Shuffle();
-				}
-
-				mat = mat.HadamardProduct(_dropout);
-
-				ans = mat;
+				LatestAnswer.HadamardProduct(Dropout);
+				LatestAnswer.MultiplyByAlpha(1 / _dropoutRate);
 			}
 
 			//time = Stopwatch.GetTimestamp() - time;
