@@ -11,15 +11,13 @@ from numpy import *
 def roulette_wheel_selection(population:list, fitness_function, n):
     fit_values = [(genome, fitness_function(genome)) for genome in population]
     fit_sum = sum([values[1] for values in fit_values])
-    indices = set()
     subpopulation = []
-    while len(indices) != n:
+    for i in range(n):
         val = uniform(0, fit_sum)
         curr = 0
-        for index, (genome, value) in enumerate(fit_values):
+        for genome, value in fit_values:
             curr += value
-            if curr > val and index not in indices:
-                indices.add(index)
+            if curr > val:
                 subpopulation.append(genome)
                 break
     return subpopulation
