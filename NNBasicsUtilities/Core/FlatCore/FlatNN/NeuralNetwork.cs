@@ -176,7 +176,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			var ans = new FlatMatrix();
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
-			var seriesErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
+			var seriesErrors = FlatMatrix.Of(1, expected.Cols);
 			var logger = Logger.Instance.StartSession(true, _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
@@ -224,7 +224,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					if (fAnswer.Cols > 1)
 					{
-						accuracy += ans[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
+						accuracy += _predictLayer.Answer[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
 					}
 
 #if Verbose
@@ -281,7 +281,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 			_isLearned = true;
 
-			return (ans, endErrors, endError);
+			return (_predictLayer.Answer, endErrors, endError);
 		}
 
 		public (FlatMatrix, FlatMatrix, double) Test(FlatMatrix expected, FlatMatrix dataSeries)
@@ -294,8 +294,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 			var logger = Logger.Instance.StartSession(name: _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
-			var seriesErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
-			var ans = FlatMatrix.Of(0, 0);
+			var seriesErrors = FlatMatrix.Of(1, expected.Cols);
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 			var accuracy = 0;
@@ -332,10 +331,10 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 				if (flatMatrix.Cols > 1)
 				{
-					accuracy += ans[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
+					accuracy += _predictLayer.Answer[0].ArgMax() == expectedOutput[0].ArgMax() ? 1 : 0;
 				}
 
-				logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index, expectedOutput);
+				logger = logger.LogSeriesError(seriesErrors, _predictLayer.Answer, seriesError, index, expectedOutput);
 
 				#endregion
 			}
@@ -346,7 +345,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			LogReport?.Invoke(this, logger.ToString());
 			logger.EndSession();
 
-			return (ans, endErrors, endError);
+			return (_predictLayer.Answer, endErrors, endError);
 		}
 	}
 }

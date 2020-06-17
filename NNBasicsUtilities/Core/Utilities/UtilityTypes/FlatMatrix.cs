@@ -11,7 +11,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		public int Rows { get; private set; }
 		public int Cols { get; private set; }
 		private readonly FlatMatrix _transposed;
-		private readonly FlatMatrix _row;
+		private FlatMatrix _row;
 
 		public override string ToString()
 		{
@@ -80,7 +80,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public FlatMatrix GetRow(int i)
 		{
-			if (_row == null) return null;
+			_row ??= new FlatMatrix {Rows = 1, Cols = Cols, _data = new double[Cols]};
 			const int doubleSize = sizeof(double);
 			var startInd = doubleSize * i * Cols;
 			var len = Cols * doubleSize;
