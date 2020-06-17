@@ -394,6 +394,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			{
 				hiddenLayer.SetTestSession(true);
 			}
+			_predictLayer.SetTestSession(true);
 
 			for (var index = 0; index < dataSeries.Rows; ++index)
 			{

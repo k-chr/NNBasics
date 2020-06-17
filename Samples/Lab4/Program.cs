@@ -1,4 +1,4 @@
-﻿#define task2a
+﻿#define task2b
 
 using NNBasicsUtilities.ActivationFunctions;
 using NNBasicsUtilities.Core.FlatCore.FlatNN;
