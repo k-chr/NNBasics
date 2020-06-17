@@ -21,8 +21,8 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 		protected FlatMatrix Dropout;
 		protected double[] DropoutVec;
 
-	  public HiddenLayer(FlatMatrix ons, Func<double, double> fx = null, Func<double, double> dfx = null,
-			bool dropout = false, double dropoutRate = 0) : base(ons)
+	  public HiddenLayer(FlatMatrix ons, int inputRows, Func<double, double> fx = null, Func<double, double> dfx = null,
+			bool dropout = false, double dropoutRate = 0) : base(ons, inputRows)
 		{
 			_activationFunctionDerivative += d => dfx?.Invoke(d) ?? 1;
 			_applyDropout = dropout;
@@ -35,25 +35,28 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 				var fill = (int) (len * dropoutRate);
 				var trueDropout = fill / (double) len;
 				_dropoutRate = trueDropout;
-				_dropout = GenerateDropout();
+				GenerateDropout();
 			}
 		}
 
-		private FlatMatrix GenerateDropout()
+		private void GenerateDropout()
 		{
-			var l = new List<double>();
+			Dropout = FlatMatrix.Of(Ins.Rows, Ons.Rows);
+			DropoutVec = new double[Ons.Rows];
+
 			var count = Ons.Cols;
 			var fill = _dropoutRate * count;
 
 			for (var i = 0; i < count; ++i)
 			{
-				l[i] = i < fill ? 1 : 0;
+				DropoutVec[i] = i < fill ? 1 : 0;
 			}
 
-			l.Shuffle();
-			var mat = FlatMatrix.Of(1, l.Count);
-			mat[(Index) 0] = l.ToArray();
-			return mat;
+			for (var i = 0; i < Ins.Rows; ++i)
+			{
+			   DropoutVec.Shuffle();
+			   Dropout[i] = DropoutVec;
+			}
 		}
 
 		public (FlatMatrix, FlatMatrix) BackPropagate(FlatMatrix deltas, FlatMatrix ons)

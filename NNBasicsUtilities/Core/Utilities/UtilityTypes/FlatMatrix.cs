@@ -54,21 +54,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Buffer.BlockCopy(toCopy._data, 0, _data, 0, toCopy._data.Length * sizeof(double));
 		}
 
-		public FlatMatrix this[int i]
-		{
-			get
-			{
-				const int doubleSize = sizeof(double);
-				var newCols = Cols;
-				var newRows = 1;
-				var data = new double[newCols];
-				var startInd = doubleSize * i * Cols;
-				var len = newCols * doubleSize;
-				Buffer.BlockCopy(_data, startInd, data, 0, len);
-				return new FlatMatrix {_data = data, Cols = newCols, Rows = newRows};
-			}
-		}
-
 		public double[] this[Index i]
 		{
 			get
