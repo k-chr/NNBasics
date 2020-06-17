@@ -5,7 +5,8 @@ Created on Wed Jun 17 02:14:39 2020
 @author: Kamil Chrustowski
 """
 
-
+from mutation import *
+from selection import *
 from utils import *
 from numpy import array
 
