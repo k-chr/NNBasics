@@ -28,20 +28,13 @@ namespace MatricesBenchmark
 		public void StaticMultiply()
 		{
 			ref var mat1 = ref array;
+			var mat = FlatMatrix.Of(mat1.Rows, mat1.Cols);
 			for (var i = 0; i < 16; ++i)
 			{
-				var mat = FlatMatrix.Multiply(mat1, mat1);
+				FlatMatrix.Multiply(mat1, mat1, mat);
 			}
 		}
 
-		[Benchmark(OperationsPerInvoke = 16)]
-		public void OpMul()
-		{
-			for (var i = 0; i < 16; ++i)
-			{
-				var mat = array * array;
-			}
-		}
 
 		[Benchmark(OperationsPerInvoke = 16)]
 		public void MatrixOpMul()

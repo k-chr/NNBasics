@@ -4,47 +4,47 @@ using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 
 namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 {
-   public class PredictLayer : Layer
-   {
-	   private readonly bool _useSoftmax;
+	public class PredictLayer : Layer
+	{
+		private readonly bool _useSoftmax;
 
-	   public PredictLayer(FlatMatrix ons, bool useSoftmax = false) : base(ons)
-	   {
-		   _useSoftmax = useSoftmax;
-	   }
+		public PredictLayer(FlatMatrix ons, int inputRows, bool useSoftmax = false) : base(ons, inputRows)
+		{
+			_useSoftmax = useSoftmax;
+		}
 
-	   public (FlatMatrix, FlatMatrix) GetDeltas(FlatMatrix expectedAnswer)
-	   {
-		   var thisLayerResponse = LatestAnswer;
-		   var deltas = thisLayerResponse - expectedAnswer;
-		   var ans = deltas;
-		   LatestDeltas = ans;
-		   return (ans, Ons);
-	  }
+		public (FlatMatrix, FlatMatrix) GetDeltas(FlatMatrix expectedAnswer)
+		{
+			if (TestPending)
+			{
+				FlatMatrix.SubtractMatrix(TestAnswer, expectedAnswer, TestDeltas);
+			}
+			else
+			{
+				FlatMatrix.SubtractMatrix(LatestAnswer, expectedAnswer, LatestDeltas);
+			}
 
-	   public void Update()
-	   {
-		   UpdateWeights(LatestDeltas);
-	   }
 
-	   public new FlatMatrix Proceed(FlatMatrix input)
-	   {
-		   //var time = Stopwatch.GetTimestamp();
+			return (TestPending ? TestDeltas : LatestDeltas, Ons);
+		}
 
-		   var ans = base.Proceed(input);
-		   if (_useSoftmax)
-		   {
-			   ans = ans.Softmax();
-		   }
+		public void Update()
+		{
+			UpdateWeights();
+		}
 
-		   //time = Stopwatch.GetTimestamp() - time;
-		   //Console.WriteLine($"Proceed time in predict layer: {time}");
-		   return ans;
-	   }
+		public new void Proceed(FlatMatrix input)
+		{
+			base.Proceed(input);
+			if (_useSoftmax && !TestPending)
+			{
+				LatestAnswer.Softmax();
+			}
+		}
 
-	   public override string ToString()
-	   {
-		   return Ons.ToString();
-	   }
-   }
+		public override string ToString()
+		{
+			return Ons.ToString();
+		}
+	}
 }

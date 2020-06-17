@@ -36,10 +36,10 @@ namespace NNBasicsUtilitiesTests
 		{
 			_flat[0, 0] = 33;
 			var start = Stopwatch.GetTimestamp();
-			var mat = _flat.Softmax();
+			_flat.Softmax();
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"FlatMatrix softmax cycles: {start}");
-			_testOutputHelper.WriteLine(mat.ToString());
+			_testOutputHelper.WriteLine(_flat.ToString());
 		}
 
 		[Fact]
@@ -164,17 +164,13 @@ namespace NNBasicsUtilitiesTests
 		public void FlatMatrixPlusOpVsRefAddMatrix()
 		{
 			var transposed = _flat.T();
+			var mat = FlatMatrix.Of(transposed.Rows, transposed.Cols);
 			var start = Stopwatch.GetTimestamp();
-			var mat = FlatMatrix.AddMatrix(_flat,  transposed);
+
+			FlatMatrix.AddMatrix(_flat, transposed, mat);
 			start = Stopwatch.GetTimestamp() - start;
 			//_testOutputHelper.WriteLine($"After add:\n{_flat}");
 			_testOutputHelper.WriteLine($"Ref Addition cycles: {start}");
-
-			start = Stopwatch.GetTimestamp();
-			mat = _flat + transposed;
-			start = Stopwatch.GetTimestamp() - start;
-			//_testOutputHelper.WriteLine($"After add:\n{_flat}");
-			_testOutputHelper.WriteLine($"Op Addition cycles: {start}");
 		}
 
 		[Fact]
@@ -190,14 +186,6 @@ namespace NNBasicsUtilitiesTests
 			_testOutputHelper.WriteLine($"Addition cycles: {start}");
 		}
 
-		[Fact]
-		public void AddRefFlatMatrix()
-		{
-			var start = Stopwatch.GetTimestamp();
-			var mat = FlatMatrix.AddMatrix(_flat,  _flat);
-			start = Stopwatch.GetTimestamp() - start;
-			_testOutputHelper.WriteLine($"Addition op cycles: {start}");
-		}
 
 		[Fact]
 		public void GetRowFromFlatMatrix()
@@ -235,15 +223,6 @@ namespace NNBasicsUtilitiesTests
 		}
 
 		[Fact]
-		public void AddOperatorFlatMatTest()
-		{
-			var start = Stopwatch.GetTimestamp();
-			var mat = _flat + _flat;
-			start = Stopwatch.GetTimestamp() - start;
-			_testOutputHelper.WriteLine($"Addition op cycles: {start}");
-		}
-
-		[Fact]
 		public void AddOperatorNotFlatMatTest()
 		{
 			var start = Stopwatch.GetTimestamp();
@@ -264,20 +243,11 @@ namespace NNBasicsUtilitiesTests
 		}
 
 		[Fact]
-		public void MulOpTestFlat()
-		{
-			var start = Stopwatch.GetTimestamp();
-			var mat3 = _flat * _flat;
-			start = Stopwatch.GetTimestamp() - start;
-			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
-			_testOutputHelper.WriteLine(mat3.ToString());
-		}
-
-		[Fact]
 		public void TwoLoopMulOpTest()
 		{
+			var mat3 = FlatMatrix.Of(_flat.Rows, _flat.Cols);
 			var start = Stopwatch.GetTimestamp();
-			var mat3 = FlatMatrix.Multiply( _flat, _flat);
+			FlatMatrix.Multiply(_flat, _flat, mat3);
 			start = Stopwatch.GetTimestamp() - start;
 			_testOutputHelper.WriteLine($"Mul flat op cycles: {start}");
 			_testOutputHelper.WriteLine(mat3.ToString());

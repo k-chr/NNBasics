@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using NNBasicsUtilities.Core.FlatCore.FlatAbstracts;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
@@ -18,96 +16,98 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 		private readonly double _dropoutRate;
 		private readonly bool _applyDropout;
 		private FlatMatrix _dropout;
+		private double[] _dropoutVec;
 
-		public HiddenLayer(FlatMatrix ons, Func<double, double> fx = null, Func<double, double> dfx = null,
-			bool dropout = false, double dropoutRate = 0) : base(ons)
+		public HiddenLayer(FlatMatrix ons, int inputRows, Func<double, double> fx = null,
+			Func<double, double> dfx = null,
+			bool dropout = false, double dropoutRate = 0) : base(ons, inputRows)
 		{
 			_activationFunctionDerivative += d => dfx?.Invoke(d) ?? 1;
 			_applyDropout = dropout;
 
 			_activationFunction += d => fx?.Invoke(d) ?? d;
 
-			if (_applyDropout)
+			if (_applyDropout && !TestPending)
 			{
 				var len = ons.Cols;
 				var fill = (int) (len * dropoutRate);
 				var trueDropout = fill / (double) len;
 				_dropoutRate = trueDropout;
-				_dropout = GenerateDropout();
+				GenerateDropout();
 			}
 		}
 
-		private FlatMatrix GenerateDropout()
+		private void GenerateDropout()
 		{
-			var l = new List<double>();
-			var count = Ons.Cols;
+			_dropout = FlatMatrix.Of(Ins.Rows, Ons.Rows);
+			_dropoutVec = new double[Ons.Rows];
+
+			var count = Ons.Rows;
 			var fill = _dropoutRate * count;
 
 			for (var i = 0; i < count; ++i)
 			{
-				l[i] = i < fill ? 1 : 0;
+				_dropoutVec[i] = i < fill ? 1 : 0;
 			}
+		}
 
-			l.Shuffle();
-			var mat = FlatMatrix.Of(1, l.Count);
-			mat[(Index) 0] = l.ToArray();
-			return mat;
+		private void ShuffleDropout()
+		{
+			for (var i = 0; i < Ins.Rows; ++i)
+			{
+				_dropoutVec.Shuffle();
+				_dropout[i] = _dropoutVec;
+			}
 		}
 
 		public (FlatMatrix, FlatMatrix) BackPropagate(FlatMatrix deltas, FlatMatrix ons)
 		{
-			var thisLayerResponse = LatestAnswer;
-			var matrix = deltas * ons;
-			var data = matrix;
-			thisLayerResponse.ApplyFunction(d => _activationFunctionDerivative(d));
-			data = data.HadamardProduct(thisLayerResponse);
-
-			if (_applyDropout)
+			if (!TestPending)
 			{
-				var mat = data.HadamardProduct(_dropout);
-				data = mat;
+				FlatMatrix.Multiply(deltas, ons, LatestDeltas);
+				LatestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
+				LatestDeltas.HadamardProduct(LatestAnswer);
+
+				if (_applyDropout)
+				{
+					LatestDeltas.HadamardProduct(_dropout);
+				}
+			}
+			else
+			{
+				FlatMatrix.Multiply(deltas, ons, TestDeltas);
+				TestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
+				TestDeltas.HadamardProduct(TestAnswer);
 			}
 
-			var ans = data;
-			LatestDeltas = ans;
-			return (ans, Ons);
-	  }
+			return (TestPending ? TestDeltas : LatestDeltas, Ons);
+		}
 
 		public void Update()
 		{
-			UpdateWeights(LatestDeltas);
+			UpdateWeights();
 		}
 
-		public new FlatMatrix Proceed(FlatMatrix ins)
+		public new void Proceed(FlatMatrix ins)
 		{
-			//var time = Stopwatch.GetTimestamp();
-			//var subTime = time;
-			var ans = base.Proceed(ins);
-			//subTime = Stopwatch.GetTimestamp() - subTime;
-			//Console.WriteLine($"Proceed time in hidden layer calling base method: {subTime}");
-			//subTime = Stopwatch.GetTimestamp();
-			ans.ApplyFunction(d => _activationFunction(d));
-			//subTime = Stopwatch.GetTimestamp() - subTime;
-			//Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
-			if (_applyDropout)
+			base.Proceed(ins);
+			if (TestPending)
 			{
-				var mat = ans;
-				var r = new Random();
-				var bound = r.Next(10);
-
-				for (var j = 0; j < bound; ++j)
-				{
-					_dropout.Shuffle();
-				}
-
-				mat = mat.HadamardProduct(_dropout);
-
-				ans = mat;
+				TestAnswer.ApplyFunction(d => _activationFunction(d));
+			}
+			else
+			{
+				LatestAnswer.ApplyFunction(d => _activationFunction(d));
 			}
 
-			//time = Stopwatch.GetTimestamp() - time;
-			//Console.WriteLine($"Proceed time in hidden layer in total: {time}");
-			return ans;
+			if (_applyDropout && !TestPending)
+			{
+				ShuffleDropout();
+
+				LatestAnswer.HadamardProduct(_dropout);
+				LatestAnswer.MultiplyByAlpha(1 / _dropoutRate);
+			}
+
 		}
 
 		public override string ToString()
