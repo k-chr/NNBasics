@@ -170,10 +170,125 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			}
 		}
 
+		public (FlatMatrix, FlatMatrix, double) BatchTrain(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
+			int batchSize)
+		{
+			var endError = 0.0;
+			var endErrors = FlatMatrix.Of(batchSize, _predictLayer.Weights.Cols);
+			var seriesErrors = FlatMatrix.Of(batchSize, expected.Cols);
+			var logger = Logger.Instance.StartSession(true, _name)
+			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
+
+			_isLearned = false;
+
+			for (var i = 0; i < iterations; ++i, ++_currentIteration)
+			{
+				var errors = FlatMatrix.Of(1, expected.Cols);
+				var error = 0.0;
+				var accuracy = 0;
+				for (var index = 0; index < dataSeries.Rows; index += batchSize)
+				{
+					var rowInput = dataSeries[index..(index + batchSize), ..dataSeries.Cols];
+					var expectedOutput = expected[index..(index + batchSize), ..expected.Cols];
+
+					#region Propagation
+
+					//var time = Stopwatch.GetTimestamp();
+
+					foreach (var layer in _hiddenLayers)
+					{
+						layer.Proceed(rowInput);
+						rowInput = layer.Answer;
+					}
+
+					_predictLayer.Proceed(rowInput);
+
+					//time = Stopwatch.GetTimestamp() - time;
+					//Console.WriteLine($"Propagation time: {time}");
+
+					#endregion
+
+					#region GetDeltasOnPredictionLayer
+
+					var (fAnswer, ons) = _predictLayer.GetDeltas(expectedOutput);
+
+					#endregion
+
+					#region ErrorCummulation
+
+					var seriesError = fAnswer.Sum(d => d * d);
+					fAnswer.HadamardProduct(fAnswer, seriesErrors);
+					error += seriesError;
+					errors.AddMatrix(seriesErrors);
+
+					if (fAnswer.Cols > 1)
+					{
+						for (var k = 0; k < batchSize; ++k)
+						{
+							accuracy += _predictLayer.Answer[k].ArgMax() == expectedOutput[k].ArgMax() ? 1 : 0;
+						}
+					}
+
+#if Verbose
+                  logger = logger.LogSeriesError(seriesErrors, ans, seriesError, index + 1, expectedOutput.ToMatrix());
+#endif
+
+					#endregion
+
+					#region BackPropagation
+
+					//time = Stopwatch.GetTimestamp();
+
+					foreach (var hiddenLayer in _hiddenLayers)
+					{
+						(fAnswer, ons) = hiddenLayer.BackPropagate(fAnswer, ons);
+					}
+
+					//time = Stopwatch.GetTimestamp() - time;
+					//Console.WriteLine($"Back propagation time: {time}");
+
+					#endregion
+
+					#region UpdateWeights
+
+					//time = Stopwatch.GetTimestamp();
+
+
+					_predictLayer.Update();
+
+					foreach (var hiddenLayer in _hiddenLayers)
+					{
+						hiddenLayer.Update();
+					}
+
+					//time = Stopwatch.GetTimestamp() - time;
+					//Console.WriteLine($"Update time: {time}");
+
+#if Verbose
+                  //logger = logger.LogLayerInfo(_predictLayer, _hiddenLayers);
+#endif
+
+					#endregion
+				}
+
+
+				logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error, accuracy,
+					expected.Cols > 1 ? expected.Rows : 0);
+				endErrors = errors;
+				endError = error;
+			}
+
+			LogReport?.Invoke(this, logger.ToString());
+			logger.EndSession();
+
+			_isLearned = true;
+
+			return (_predictLayer.Answer, endErrors, endError);
+		}
+
 		public (FlatMatrix, FlatMatrix, double) Train(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
 			int period = 1)
 		{
-			var ans = new FlatMatrix();
 			var endError = 0.0;
 			var endErrors = FlatMatrix.Of(1, _predictLayer.Weights.Cols);
 			var seriesErrors = FlatMatrix.Of(1, expected.Cols);

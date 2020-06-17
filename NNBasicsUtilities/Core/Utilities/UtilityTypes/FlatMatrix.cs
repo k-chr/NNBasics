@@ -390,5 +390,6 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 		public double Min() => _data.Min();
 		public double Max() => _data.Max();
+		public double Sum(Func<double, double> foo) => _data.Sum(foo);
 	}
 }
