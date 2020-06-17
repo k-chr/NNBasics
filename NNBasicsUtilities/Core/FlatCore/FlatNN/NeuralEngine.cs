@@ -7,13 +7,12 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 {
    public static class NeuralEngine
    {
-	   public static FlatMatrix Proceed(FlatMatrix iNs, FlatMatrix oNs)
+	   public static void Proceed(FlatMatrix iNs, FlatMatrix oNs, FlatMatrix result)
 	   {
 		 //var time = Stopwatch.GetTimestamp();
-		 var rV = iNs * oNs.T();
+		 FlatMatrix.Multiply(iNs, oNs.T(), result);
 		 //time = Stopwatch.GetTimestamp() - time;
 		 //Console.WriteLine($"Time to perform proceed in NeuralEngine {time}");
-		 return rV;
 	   }
 
 	   public static FlatMatrix GenerateRandomLayer(int cols, int rows, double min, double max)

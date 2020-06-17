@@ -9,7 +9,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 		protected readonly FlatMatrix Ons;
 		protected FlatMatrix LatestAnswer;
 		protected FlatMatrix LatestDeltas;
-
+		protected FlatMatrix LayerWeightDelta;
 		private double _alpha;
 
 		public FlatMatrix Weights => Ons;
@@ -30,22 +30,20 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			}
 		}
 
-		protected FlatMatrix Proceed(FlatMatrix input)
+		protected void Proceed(FlatMatrix input)
 		{
 			//var time = Stopwatch.GetTimestamp();
-			Ins = input;
+			Ins.Assign(input);
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer Ins assignment time: {time}");
 			//time = Stopwatch.GetTimestamp();
-			var ans = FlatNN.NeuralEngine.Proceed(input,  Ons);
+			FlatNN.NeuralEngine.Proceed(input,  Ons, LatestAnswer);
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer proceed time: {time}");
 			//time = Stopwatch.GetTimestamp();
-			LatestAnswer = ans;
+			
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Layer LatestAnswer assignment time: {time}");
-
-			return FlatMatrix.Of(ans);
 		}
 
 		protected Layer(FlatMatrix ons)
@@ -53,11 +51,11 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			Ons = ons;
 		}
 
-		protected void UpdateWeights(FlatMatrix deltas)
+		protected void UpdateWeights()
 		{
-			var mat = deltas.T() * Ins;
-			mat.ApplyFunction(d => d * Alpha);
-			Ons.SubtractMatrix(mat);
+			FlatMatrix.Multiply(LatestDeltas.T(), Ins, LayerWeightDelta);
+			LayerWeightDelta.ApplyFunction(d => d * Alpha);
+			Ons.SubtractMatrix(LayerWeightDelta);
 		}
 	}
 }

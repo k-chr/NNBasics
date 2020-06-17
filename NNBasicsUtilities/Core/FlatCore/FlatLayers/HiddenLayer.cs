@@ -18,8 +18,10 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 		private readonly double _dropoutRate;
 		private readonly bool _applyDropout;
 		private FlatMatrix _dropout;
+		protected FlatMatrix Dropout;
+		protected double[] DropoutVec;
 
-		public HiddenLayer(FlatMatrix ons, Func<double, double> fx = null, Func<double, double> dfx = null,
+	  public HiddenLayer(FlatMatrix ons, Func<double, double> fx = null, Func<double, double> dfx = null,
 			bool dropout = false, double dropoutRate = 0) : base(ons)
 		{
 			_activationFunctionDerivative += d => dfx?.Invoke(d) ?? 1;
@@ -75,18 +77,18 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public void Update()
 		{
-			UpdateWeights(LatestDeltas);
+			UpdateWeights();
 		}
 
-		public new FlatMatrix Proceed(FlatMatrix ins)
+		public new void Proceed(FlatMatrix ins)
 		{
 			//var time = Stopwatch.GetTimestamp();
 			//var subTime = time;
-			var ans = base.Proceed(ins);
+			base.Proceed(ins);
 			//subTime = Stopwatch.GetTimestamp() - subTime;
 			//Console.WriteLine($"Proceed time in hidden layer calling base method: {subTime}");
 			//subTime = Stopwatch.GetTimestamp();
-			ans.ApplyFunction(d => _activationFunction(d));
+			LatestAnswer.ApplyFunction(d => _activationFunction(d));
 			//subTime = Stopwatch.GetTimestamp() - subTime;
 			//Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
 			if (_applyDropout)
@@ -107,7 +109,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 			//time = Stopwatch.GetTimestamp() - time;
 			//Console.WriteLine($"Proceed time in hidden layer in total: {time}");
-			return ans;
 		}
 
 		public override string ToString()
