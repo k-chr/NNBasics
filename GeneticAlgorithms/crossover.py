@@ -31,23 +31,24 @@ def order_crossover(father: array, mother: array)->object:
     
     while start_ind == end_ind:
         end_ind = randint(0, len(child) - 1)
-    print(f"start: {start_ind}\nend: {end_ind}")
     if start_ind > end_ind:
         start_ind, end_ind = end_ind, start_ind
         
     child[:start_ind] = -1
     child[end_ind:] = -1
-    print("child: ", child)
-    print("mother: ", mother)
     for i in range(start_ind):
         j = 0
-        while mother[j] in child:
+        while mother[j] in child and j < len(mother):
             j+=1
+        if(j == len(child)):
+            break
         child[i] = mother[j]
     for i in range(end_ind, len(child)):
         j = 0
-        while mother[j] in child:
+        while mother[j] in child and j < len(mother):
             j+=1
+        if(j == len(child)):
+            break
         child[i] = mother[j] 
     return child
     

@@ -14,7 +14,12 @@ It does the chromosome inversion of existing genom
 def count_bits(genome: array):
     val = count_nonzero(genome)
     return val
-    
+  
+def getShuffle(collection:list)->list:
+    rV = list(collection)
+    random.shuffle(rV)
+    return rV
+
 class PriorityQueue:
 
     def  __init__(self):
