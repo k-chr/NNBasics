@@ -11,6 +11,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 		public int Rows { get; private set; }
 		public int Cols { get; private set; }
 		private readonly FlatMatrix _transposed;
+		private readonly FlatMatrix _row;
 
 		public override string ToString()
 		{
@@ -42,7 +43,8 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 			Rows = rows;
 			Cols = cols;
 			_data = new double[rows * cols];
-			_transposed = Of(Cols, Rows);
+			_transposed = new FlatMatrix {Rows = Cols, Cols = Rows, _data = new double[Rows * Cols]};
+			_row = new FlatMatrix {Rows = 1, Cols = Cols, _data = new double[Cols]};
 		}
 
 		private FlatMatrix(FlatMatrix toCopy)
@@ -74,6 +76,16 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				var len = newCols * doubleSize;
 				Buffer.BlockCopy(value, 0, _data, startInd, len);
 			}
+		}
+
+		public FlatMatrix GetRow(int i)
+		{
+			if (_row == null) return null;
+			const int doubleSize = sizeof(double);
+			var startInd = doubleSize * i * Cols;
+			var len = Cols * doubleSize;
+			Buffer.BlockCopy(_data, startInd, _row._data, 0, len);
+			return _row;
 		}
 
 		public double this[int x, int y]
@@ -297,7 +309,7 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 				}
 			}
 		}
-		
+
 		public void MultiplyByAlpha(double alpha)
 		{
 			var len = _data.Length;

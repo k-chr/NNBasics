@@ -5,11 +5,12 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 {
 	public abstract class Layer
 	{
+		public FlatMatrix Answer => LatestAnswer;
 		protected FlatMatrix Ins;
 		protected readonly FlatMatrix Ons;
-		protected FlatMatrix LatestAnswer;
-		protected FlatMatrix LatestDeltas;
-		protected FlatMatrix LayerWeightDelta;
+		protected readonly FlatMatrix LatestAnswer;
+		protected readonly FlatMatrix LatestDeltas;
+		private readonly FlatMatrix _layerWeightDelta;
 		private double _alpha;
 
 		public FlatMatrix Weights => Ons;
@@ -51,15 +52,15 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			Ons = ons;
 			Ins = FlatMatrix.Of(inputRows, ons.Cols);
 			LatestAnswer = FlatMatrix.Of(inputRows, ons.Rows);
-			LayerWeightDelta = FlatMatrix.Of(ons.Rows, ons.Cols);
+			_layerWeightDelta = FlatMatrix.Of(ons.Rows, ons.Cols);
 			LatestDeltas = FlatMatrix.Of(inputRows, ons.Rows);
 		}
 
 		protected void UpdateWeights()
 		{
-			FlatMatrix.Multiply(LatestDeltas.T(), Ins, LayerWeightDelta);
-			LayerWeightDelta.ApplyFunction(d => d * Alpha);
-			Ons.SubtractMatrix(LayerWeightDelta);
+			FlatMatrix.Multiply(LatestDeltas.T(), Ins, _layerWeightDelta);
+			_layerWeightDelta.ApplyFunction(d => d * Alpha);
+			Ons.SubtractMatrix(_layerWeightDelta);
 		}
 	}
 }
