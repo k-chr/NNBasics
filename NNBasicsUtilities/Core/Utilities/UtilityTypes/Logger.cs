@@ -498,5 +498,44 @@ namespace NNBasicsUtilities.Core.Utilities.UtilityTypes
 
 			return this;
 	  }
+
+		public Logger LogIteration(int currentIteration, FlatCore.FlatLayers.PredictLayer predictLayer, in int iterationErrors, in int seriesCount)
+		{
+			if (!_isSessionOpened)
+			{
+				throw new AccessViolationException(
+					"Session of logging is currently closed, open session first!");
+			}
+
+			using var file = new FileStream(_currentFile, FileMode.Append, FileAccess.Write);
+			using var stream = new MemoryStream();
+			using var writer = new StreamWriter(stream);
+			var date = CurrentDate;
+
+			writer.Write(date);
+			writer.Write(IterationTag(currentIteration));
+			writer.Write(_verbose ? PredictLayerTag(predictLayer) : PredictionLayerRangeTag(predictLayer));
+			if (seriesCount > 0)
+			{
+				writer.Write(AccuracyTag(iterationErrors, seriesCount));
+			}
+			writer.Flush();
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.WriteTo(file);
+
+			if (_verbose)
+			{
+				_logBuilder.Append(date)
+				   .Append(IterationTag(currentIteration))
+				   .Append(PredictLayerTag(predictLayer));
+
+				if (seriesCount > 0)
+				{
+					_logBuilder.Append(AccuracyTag(iterationErrors, seriesCount));
+				}
+			}
+
+			return this;
+	  }
 	}
 }

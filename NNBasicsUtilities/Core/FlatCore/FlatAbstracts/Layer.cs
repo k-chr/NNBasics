@@ -1,14 +1,18 @@
 ﻿using System;
 using NNBasicsUtilities.Core.Utilities.UtilityTypes;
 using NNBasicsUtilities.Extensions;
+
 namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 {
 	public abstract class Layer
 	{
-		public FlatMatrix Answer => LatestAnswer;
+		public FlatMatrix Answer => TestPending ? TestAnswer : LatestAnswer;
 		protected FlatMatrix Ins;
+		protected FlatMatrix TestIns;
 		protected readonly FlatMatrix Ons;
 		protected readonly FlatMatrix LatestAnswer;
+		protected readonly FlatMatrix TestAnswer;
+		protected readonly FlatMatrix TestDeltas;
 		protected readonly FlatMatrix LatestDeltas;
 		private readonly FlatMatrix _layerWeightDelta;
 		private double _alpha;
@@ -39,18 +43,17 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 
 		protected void Proceed(FlatMatrix input)
 		{
-			//var time = Stopwatch.GetTimestamp();
-			Ins.Assign(input);
-			//time = Stopwatch.GetTimestamp() - time;
-			//Console.WriteLine($"Layer Ins assignment time: {time}");
-			//time = Stopwatch.GetTimestamp();
-			FlatNN.NeuralEngine.Proceed(input,  Ons, LatestAnswer);
-			//time = Stopwatch.GetTimestamp() - time;
-			//Console.WriteLine($"Layer proceed time: {time}");
-			//time = Stopwatch.GetTimestamp();
-			
-			//time = Stopwatch.GetTimestamp() - time;
-			//Console.WriteLine($"Layer LatestAnswer assignment time: {time}");
+			if (TestPending)
+			{
+				TestIns.Assign(input);
+			}
+			else
+			{
+				Ins.Assign(input);
+			}
+
+			FlatNN.NeuralEngine.Proceed(input, Ons, TestPending ? TestAnswer : LatestAnswer);
+
 		}
 
 		protected Layer(FlatMatrix ons, int inputRows)
@@ -60,11 +63,22 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			LatestAnswer = FlatMatrix.Of(inputRows, ons.Rows);
 			_layerWeightDelta = FlatMatrix.Of(ons.Rows, ons.Cols);
 			LatestDeltas = FlatMatrix.Of(inputRows, ons.Rows);
+			TestIns = FlatMatrix.Of(1, ons.Cols);
+			TestAnswer = FlatMatrix.Of(1, ons.Rows);
+			TestDeltas = FlatMatrix.Of(1, ons.Rows);
 		}
 
 		protected void UpdateWeights()
 		{
-			FlatMatrix.Multiply(LatestDeltas.T(), Ins, _layerWeightDelta);
+			if (TestPending)
+			{
+				FlatMatrix.Multiply(TestDeltas.T(), TestIns, _layerWeightDelta);
+			}
+			else
+			{
+				FlatMatrix.Multiply(LatestDeltas.T(), Ins, _layerWeightDelta);
+			}
+
 			_layerWeightDelta.ApplyFunction(d => d * Alpha);
 			Ons.SubtractMatrix(_layerWeightDelta);
 		}

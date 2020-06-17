@@ -174,8 +174,10 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 			int batchSize)
 		{
 			var endError = 0.0;
-			var endErrors = FlatMatrix.Of(batchSize, _predictLayer.Weights.Cols);
+#if Verbose
+		 var endErrors = FlatMatrix.Of(batchSize, _predictLayer.Weights.Cols);
 			var seriesErrors = FlatMatrix.Of(batchSize, expected.Cols);
+#endif
 			var logger = Logger.Instance.StartSession(true, _name)
 			   .LogPreconditions(_hiddenLayers.Count, _predictLayer.Alpha, _predictLayer);
 
@@ -183,17 +185,13 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 			for (var i = 0; i < iterations; ++i, ++_currentIteration)
 			{
-				var errors = FlatMatrix.Of(1, expected.Cols);
-				var error = 0.0;
 				var accuracy = 0;
-				for (var index = 0; index < dataSeries.Rows; index += batchSize)
+				for (var index = 0; index < dataSeries.Rows - batchSize; index += batchSize)
 				{
 					var rowInput = dataSeries[index..(index + batchSize), ..dataSeries.Cols];
 					var expectedOutput = expected[index..(index + batchSize), ..expected.Cols];
 
 					#region Propagation
-
-					//var time = Stopwatch.GetTimestamp();
 
 					foreach (var layer in _hiddenLayers)
 					{
@@ -202,9 +200,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 					}
 
 					_predictLayer.Proceed(rowInput);
-
-					//time = Stopwatch.GetTimestamp() - time;
-					//Console.WriteLine($"Propagation time: {time}");
 
 					#endregion
 
@@ -216,10 +211,12 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					#region ErrorCummulation
 
-					var seriesError = fAnswer.Sum(d => d * d);
-					fAnswer.HadamardProduct(fAnswer, seriesErrors);
-					error += seriesError;
-					errors.AddMatrix(seriesErrors);
+#if Verbose
+			   var seriesError = fAnswer.Sum(d => d * d);
+			   fAnswer.HadamardProduct(fAnswer, seriesErrors);
+			   error += seriesError;
+			   errors.AddMatrix(seriesErrors);
+#endif
 
 					if (fAnswer.Cols > 1)
 					{
@@ -237,22 +234,14 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					#region BackPropagation
 
-					//time = Stopwatch.GetTimestamp();
-
 					foreach (var hiddenLayer in _hiddenLayers)
 					{
 						(fAnswer, ons) = hiddenLayer.BackPropagate(fAnswer, ons);
 					}
 
-					//time = Stopwatch.GetTimestamp() - time;
-					//Console.WriteLine($"Back propagation time: {time}");
-
 					#endregion
 
 					#region UpdateWeights
-
-					//time = Stopwatch.GetTimestamp();
-
 
 					_predictLayer.Update();
 
@@ -260,9 +249,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 					{
 						hiddenLayer.Update();
 					}
-
-					//time = Stopwatch.GetTimestamp() - time;
-					//Console.WriteLine($"Update time: {time}");
 
 #if Verbose
                   //logger = logger.LogLayerInfo(_predictLayer, _hiddenLayers);
@@ -272,10 +258,15 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 				}
 
 
-				logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error, accuracy,
+#if Verbose
+			logger = logger.LogIteration(_currentIteration + 1, _predictLayer, errors, error, accuracy,
+		expected.Cols > 1 ? expected.Rows : 0);
+			endErrors = errors;
+#else
+				logger.LogIteration(_currentIteration + 1, _predictLayer, accuracy,
 					expected.Cols > 1 ? expected.Rows : 0);
-				endErrors = errors;
-				endError = error;
+				endError = accuracy;
+#endif
 			}
 
 			LogReport?.Invoke(this, logger.ToString());
@@ -283,7 +274,7 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 			_isLearned = true;
 
-			return (_predictLayer.Answer, endErrors, endError);
+			return (_predictLayer.Answer, _predictLayer.Weights, endError);
 		}
 
 		public (FlatMatrix, FlatMatrix, double) Train(FlatMatrix expected, FlatMatrix dataSeries, int iterations,
@@ -309,8 +300,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					#region Propagation
 
-					//var time = Stopwatch.GetTimestamp();
-
 					foreach (var layer in _hiddenLayers)
 					{
 						layer.Proceed(rowInput);
@@ -318,9 +307,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 					}
 
 					_predictLayer.Proceed(rowInput);
-
-					//time = Stopwatch.GetTimestamp() - time;
-					//Console.WriteLine($"Propagation time: {time}");
 
 					#endregion
 
@@ -350,22 +336,14 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 
 					#region BackPropagation
 
-					//time = Stopwatch.GetTimestamp();
-
 					foreach (var hiddenLayer in _hiddenLayers)
 					{
 						(fAnswer, ons) = hiddenLayer.BackPropagate(fAnswer, ons);
 					}
 
-					//time = Stopwatch.GetTimestamp() - time;
-					//Console.WriteLine($"Back propagation time: {time}");
-
 					#endregion
 
 					#region UpdateWeights
-
-					//time = Stopwatch.GetTimestamp();
-
 
 					_predictLayer.Update();
 
@@ -374,8 +352,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatNN
 						hiddenLayer.Update();
 					}
 
-					//time = Stopwatch.GetTimestamp() - time;
-					//Console.WriteLine($"Update time: {time}");
 
 #if Verbose
                   //logger = logger.LogLayerInfo(_predictLayer, _hiddenLayers);

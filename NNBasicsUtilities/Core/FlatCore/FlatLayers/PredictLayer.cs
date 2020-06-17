@@ -15,8 +15,17 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public (FlatMatrix, FlatMatrix) GetDeltas(FlatMatrix expectedAnswer)
 		{
-			FlatMatrix.SubtractMatrix(LatestAnswer, expectedAnswer, LatestDeltas);
-			return (LatestDeltas, Ons);
+			if (TestPending)
+			{
+				FlatMatrix.SubtractMatrix(TestAnswer, expectedAnswer, TestDeltas);
+			}
+			else
+			{
+				FlatMatrix.SubtractMatrix(LatestAnswer, expectedAnswer, LatestDeltas);
+			}
+
+
+			return (TestPending ? TestDeltas : LatestDeltas, Ons);
 		}
 
 		public void Update()
@@ -26,16 +35,11 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public new void Proceed(FlatMatrix input)
 		{
-			//var time = Stopwatch.GetTimestamp();
-
 			base.Proceed(input);
-			if (_useSoftmax)
+			if (_useSoftmax && !TestPending)
 			{
 				LatestAnswer.Softmax();
 			}
-
-			//time = Stopwatch.GetTimestamp() - time;
-			//Console.WriteLine($"Proceed time in predict layer: {time}");
 		}
 
 		public override string ToString()

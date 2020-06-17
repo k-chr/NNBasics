@@ -62,16 +62,25 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public (FlatMatrix, FlatMatrix) BackPropagate(FlatMatrix deltas, FlatMatrix ons)
 		{
-			FlatMatrix.Multiply(deltas, ons, LatestDeltas);
-			LatestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
-			LatestDeltas.HadamardProduct(LatestAnswer);
-
-			if (_applyDropout && !TestPending)
+			if (!TestPending)
 			{
-				LatestDeltas.HadamardProduct(_dropout);
+				FlatMatrix.Multiply(deltas, ons, LatestDeltas);
+				LatestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
+				LatestDeltas.HadamardProduct(LatestAnswer);
+
+				if (_applyDropout)
+				{
+					LatestDeltas.HadamardProduct(_dropout);
+				}
+			}
+			else
+			{
+				FlatMatrix.Multiply(deltas, ons, TestDeltas);
+				TestAnswer.ApplyFunction(d => _activationFunctionDerivative(d));
+				TestDeltas.HadamardProduct(TestAnswer);
 			}
 
-			return (LatestDeltas, Ons);
+			return (TestPending ? TestDeltas : LatestDeltas, Ons);
 		}
 
 		public void Update()
@@ -81,15 +90,16 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 
 		public new void Proceed(FlatMatrix ins)
 		{
-			//var time = Stopwatch.GetTimestamp();
-			//var subTime = time;
 			base.Proceed(ins);
-			//subTime = Stopwatch.GetTimestamp() - subTime;
-			//Console.WriteLine($"Proceed time in hidden layer calling base method: {subTime}");
-			//subTime = Stopwatch.GetTimestamp();
-			LatestAnswer.ApplyFunction(d => _activationFunction(d));
-			//subTime = Stopwatch.GetTimestamp() - subTime;
-			//Console.WriteLine($"Proceed time in hidden layer applying activation function: {subTime}");
+			if (TestPending)
+			{
+				TestAnswer.ApplyFunction(d => _activationFunction(d));
+			}
+			else
+			{
+				LatestAnswer.ApplyFunction(d => _activationFunction(d));
+			}
+
 			if (_applyDropout && !TestPending)
 			{
 				ShuffleDropout();
@@ -98,8 +108,6 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatLayers
 				LatestAnswer.MultiplyByAlpha(1 / _dropoutRate);
 			}
 
-			//time = Stopwatch.GetTimestamp() - time;
-			//Console.WriteLine($"Proceed time in hidden layer in total: {time}");
 		}
 
 		public override string ToString()
