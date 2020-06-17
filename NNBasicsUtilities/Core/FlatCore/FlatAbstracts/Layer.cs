@@ -46,9 +46,13 @@ namespace NNBasicsUtilities.Core.FlatCore.FlatAbstracts
 			//Console.WriteLine($"Layer LatestAnswer assignment time: {time}");
 		}
 
-		protected Layer(FlatMatrix ons)
+		protected Layer(FlatMatrix ons, int inputRows)
 		{
 			Ons = ons;
+			Ins = FlatMatrix.Of(inputRows, ons.Cols);
+			LatestAnswer = FlatMatrix.Of(inputRows, ons.Rows);
+			LayerWeightDelta = FlatMatrix.Of(ons.Rows, ons.Cols);
+			LatestDeltas = FlatMatrix.Of(inputRows, ons.Rows);
 		}
 
 		protected void UpdateWeights()
