@@ -61,7 +61,26 @@ def rank_selection(population: list, fitness_function, n):
     for genom, value in fit_values:
         q.push(genom, value) 
     return [q.pop() for i in range(n)]
+
+def tournament_selection(population: list, fitness_function, n):
+    fit_values = [(genome, fitness_function(genome)) for genome in population]  
+    assert n <= len(population) // 2
+    tournaments = []
+    for i in range(n):
+        q = PriorityQueue()
+        tournaments.append(q)
+    i = 0
+    while len(fit_values) > 0:
+        if i%n == 0 and i != 0:
+            i = 0
+        val = randint(0, len(fit_values) - 1)
+        genome, value = fit_values.pop(val)
+        tournaments[i].push(genome, value)
+        i += 1
         
+    return [tournament.pop() for tournament in tournaments]
+        
+            
     
 def count_bits(genome: array):
     val = count_nonzero(genome)
